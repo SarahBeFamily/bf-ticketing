@@ -1,0 +1,21 @@
+$blue: #262c3a;
+$red: #eb5a69;
+$primary-light: mix(white,	$red, 25%);
+$red-light: mix(white,	$red, 40%);
+$titles: 'MonumentExtended';
+$text: 'Archivo', sans-serif;
+
+:root {
+	--primary-color: $blue;
+	--secondary-color: $red;
+	--success-color: #28a745;
+	--info-color: #17a2b8;
+	--warning-color: #ffc107;
+	--danger-color: #dc3545;
+	--light-color: #f8f9fa;
+	--dark-color: #343a40;
+}
+
+body {
+	margin: 0;
+}
