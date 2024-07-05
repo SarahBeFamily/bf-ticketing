@@ -57,4 +57,14 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Display the user's profile information.
+     */
+    public function show(Request $request): View
+    {
+        return view('profile.show', [
+            'user' => $request->user(),
+        ]);
+    }
 }

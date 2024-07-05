@@ -1,2 +1,12 @@
+@import "./tailwind.css";
+
 @import "./global/mixins.scss";
+
+
+@include font-face("MonumentExtended", "../fonts/MonumentExtended-Regular", 400, normal, woff2 woff ttf eot);
+@include font-face("MonumentExtended", "../fonts/MonumentExtended-Bold", 700, normal, woff2 woff ttf eot);
+@include font-face("MonumentExtended", "../fonts/MonumentExtended-Light", 300, normal, woff2 woff ttf eot);
+@include font-face("MonumentExtended", "../fonts/MonumentExtended-Ultrabold", 800, normal, woff2 woff ttf eot);
+@include font-face("MonumentExtended", "../fonts/MonumentExtended-Ultralight", 200, normal, woff2 woff ttf eot);
+
 @import "./global/globals.scss";

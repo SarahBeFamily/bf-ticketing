@@ -18,10 +18,10 @@
     </head>
     <body>
         <div id="app">
-			<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
+			<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-secondary">
                 <div>
                     <a href="/">
-                        <img src="{{ Vite::asset('resources/images/befamily.png') }}" alt="Be.Family Assistenza Clienti" class="h-12">
+                        <img src="{{ Vite::asset('resources/images/bf-logo-reg-small.png') }}" alt="Be.Family Assistenza Clienti" class="h-30">
                     </a>
                 </div>
     

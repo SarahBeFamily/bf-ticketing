@@ -26,6 +26,38 @@ class Project extends Model
     ];
 
     /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'assigned_to' => 'array',
+        'status' => 'array',
+    ];
+
+    /**
+     * Access to the customers user lists.
+     * 
+     * @return array
+     */
+    public function customers()
+    {
+        // Access user roles
+        
+        $customers = User::role('customer')->get();
+        return $customers;
+    }
+
+    /**
+     * Access to the team user lists.
+     * 
+     * @return array
+     */
+    public function team_members()
+    {
+        $team = User::role('team')->get();
+        return $team;
+    }
+
+    /**
      * Get the customer that owns the project.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -46,33 +78,26 @@ class Project extends Model
     }
     
     /**
-     * Get the assigned users for the project.
-     *
-     * @return array
+     * Get query for filtering the projects.
      */
-    public function getAssignedToAttribute()
+    public function scopeFilter($query, array $filters)
     {
-        return json_decode($this->assigned_to, true);
-    }
+        $query->when($filters['status'] ?? false, function ($query, $status) {
+            $query->where('status', $status);
+        });
 
-    /**
-     * Set the assigned users for the project.
-     *
-     * @param array $value
-     * @return void
-     */
-    public function setAssignedToAttribute($value)
-    {
-        $this->attributes['assigned_to'] = json_encode($value);
-    }
+        $query->when($filters['division'] ?? false, function ($query, $division) {
+            $query->where('division', $division);
+        });
 
-    /**
-     * Get the status for the project.
-     *
-     * @return array
-     */
-    public function getStatusAttribute()
-    {
-        return json_decode($this->status, true);
+        $query->when($filters['user_id'] ?? false, function ($query, $user_id) {
+            $query->where('user_id', $user_id);
+        });
+
+        $query->when($filters['assigned_to'] ?? false, function ($query, $assigned_to) {
+            $query->where('assigned_to', $assigned_to);
+        });
+
+        return $query;
     }
 }

@@ -1,21 +1,51 @@
+$red: #f6606e;
 $blue: #262c3a;
-$red: #eb5a69;
-$primary-light: mix(white,	$red, 25%);
-$red-light: mix(white,	$red, 40%);
-$titles: 'MonumentExtended';
-$text: 'Archivo', sans-serif;
 
 :root {
-	--primary-color: $blue;
-	--secondary-color: $red;
+	--primary-color: #262c3a;
+	// --accent: #eb5a69;
+	--accent: #F6606E;
 	--success-color: #28a745;
 	--info-color: #17a2b8;
 	--warning-color: #ffc107;
 	--danger-color: #dc3545;
 	--light-color: #f8f9fa;
-	--dark-color: #343a40;
+	--primary-light: mix(white, $red, 25%);
+	--red-light: mix(white, $red, 40%);
+	--font-titles: 'MonumentExtended';
+	--font-text: 'Archivo', sans-serif;
 }
 
 body {
 	margin: 0;
+}
+
+.full-height {
+	min-height: 93.8vh;
+}
+
+h1 {
+	font-family: var(--font-titles);
+	font-weight: 700 !important;
+  	color: var(--accent);
+}
+
+h2, h3, h4, h5, h6 {
+	&.titles {
+		font-family: var(--font-titles);
+	}
+}
+
+p {
+	font-family: var(--font-text);
+}
+
+.alert {
+	padding: 10px;
+	margin-bottom: 20px;
+	color: white;
+
+	&.alert-success {
+		background: #58a026;
+	}
 }

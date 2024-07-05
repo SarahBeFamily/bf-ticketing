@@ -10,18 +10,22 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700&display=swap" rel="stylesheet"> 
+		<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@200;400;500;600;700&display=swap" rel="stylesheet"> 
 
         <!-- Styles -->
         @vite('resources/css/app.scss')
+        @vite('resources/css/tailwind.css')
         @yield('styles')
     </head>
     <body>
         <div id="app">
 			@include('partials.header')
-            @include('partials.navigation')
-            
-            @yield('content')
+
+            <div class="wrap min-h-screen">
+                <div class="container mx-auto px-4 py-10 min-h-screen">
+                    @yield('content')
+                </div>
+            </div>
         </div>
 
         <!-- Scripts -->
