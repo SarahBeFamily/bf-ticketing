@@ -1,5 +1,3 @@
-@import "./tailwind.css";
-
 @import "./global/mixins.scss";
 
 
@@ -10,3 +8,4 @@
 @include font-face("MonumentExtended", "../fonts/MonumentExtended-Ultralight", 200, normal, woff2 woff ttf eot);
 
 @import "./global/globals.scss";
+@import "./global/icons.scss";

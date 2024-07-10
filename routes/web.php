@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\TicketsController;
+use App\Http\Controllers\CommentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,11 +22,25 @@ Route::get('/', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Routes for the TicketsController
+Route::get('/tickets', [TicketsController::class, 'index'])->name('tickets.index');
+Route::get('/tickets/nuovo', [TicketsController::class, 'create'])->name('tickets.create');
+Route::post('/tickets', [TicketsController::class, 'store'])->name('tickets.store');
+Route::get('/tickets/{ticket}', [TicketsController::class, 'show'])->name('tickets.show');
 
-Route::group(['middleware' => ['role:customer,team']], function () {
-    Route::get('/tickets', function () {
-        return view('tickets');
-    })->name('tickets');
+// Routes for the CommentsController
+Route::post('/tickets/{ticket}', [CommentsController::class, 'store'])->name('comments.store');
+
+// Routes for the ProjectsController
+Route::get('/progetti/nuovo', [ProjectsController::class, 'create'])->name('projects.create');
+Route::post('/progetti', [ProjectsController::class, 'store'])->name('projects.store');
+
+Route::group(['middleware' => ['role:customer|team']], function () {
+    // Routes for the ProjectsController
+    Route::get('/progetti', [ProjectsController::class, 'index'])->name('projects.index');
+    Route::patch('/progetti', [ProjectsController::class, 'sort'])->name('projects.sort');
+    Route::patch('/progetti', [ProjectsController::class, 'filter'])->name('projects.filter');
+    Route::get('/progetti/{project}', [ProjectsController::class, 'show'])->name('projects.show');
 });
 
 Route::group(['middleware' => ['role:team']], function () {
@@ -45,16 +61,12 @@ Route::group(['middleware' => ['role:team']], function () {
     Route::post('/clienti/{id}', [CustomerController::class, 'update'])->name('customers.update');
     Route::delete('/clienti/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy');
 
-    // Routes for the ProjectsController
-    Route::get('/progetti', [ProjectsController::class, 'index'])->name('projects.index');
-    Route::patch('/progetti', [ProjectsController::class, 'sort'])->name('projects.sort');
-    Route::patch('/progetti', [ProjectsController::class, 'filter'])->name('projects.filter');
-    Route::get('/progetti/nuovo', [ProjectsController::class, 'create'])->name('projects.create');
-    Route::post('/progetti', [ProjectsController::class, 'store'])->name('projects.store');
-    Route::get('/progetti/{project}', [ProjectsController::class, 'show'])->name('projects.show');
     Route::get('/progetti/{project}/modifica', [ProjectsController::class, 'edit'])->name('projects.edit');
     Route::patch('/progetti/{id}', [ProjectsController::class, 'update'])->name('projects.update');
     Route::delete('/progetti/{id}', [ProjectsController::class, 'destroy'])->name('projects.destroy');
+
+    // Routes for the TicketsController
+    Route::delete('/tickets/{id}', [TicketsController::class, 'destroy'])->name('tickets.destroy');
 });
 
 require __DIR__.'/auth.php';

@@ -23,10 +23,15 @@ class Project extends Model
         'user_id',
         'status',
         'assigned_to',
+        'started_at',
+        'deadline',
+        'completed_at',
     ];
 
     /**
      * The attributes that should be cast.
+     * 
+     * @var array<string, string>
      */
     protected $casts = [
         'assigned_to' => 'array',
@@ -79,6 +84,10 @@ class Project extends Model
     
     /**
      * Get query for filtering the projects.
+     * 
+     * @param mixed $query
+     * @param array $filters
+     * @return mixed
      */
     public function scopeFilter($query, array $filters)
     {

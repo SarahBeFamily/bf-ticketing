@@ -5,8 +5,8 @@
 	@php
 		$id = request()->route('project');
 		$project = App\Models\Project::find($id);
-		$customer = App\Models\User::find($project->user_id);
-		$user = App\Models\User::find($project->assigned_to);
+		$customer = App\Models\User::find($project->user_id) ?? null;
+		$user = App\Models\User::find($project->assigned_to) ?? null;
 	@endphp
 
 	<h1> {{ $project->name }}</h1>
@@ -14,7 +14,7 @@
 
 	<div class="dettagli">
 		<p>Dettagli</p>
-		<p>Data di inizio: {{ $project->start_date }}</p>
+		<p>Data di inizio: {{ $project->started_at }}</p>
 		<p>Scadenza: {{ $project->deadline }}</p>
 		<p>Stato: {{ $project->status }}</p>
 		<p>Reparto: {{ $project->division }}</p>

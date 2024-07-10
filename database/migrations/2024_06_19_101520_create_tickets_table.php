@@ -19,9 +19,8 @@ return new class extends Migration
             $table->string('type');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('project_id')->nullable()->constrained('projects');
-            $table->foreignId('assigned_to')->nullable()->constrained('users');
+            $table->string('assigned_to')->nullable();
             $table->timestamp('completed_at')->nullable();
-            $table->timestamp('started_at');
             $table->timestamps();
         });
     }

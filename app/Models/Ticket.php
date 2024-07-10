@@ -49,11 +49,12 @@ class Ticket extends Model
     /**
      * Set the assigned users for the ticket.
      *
-     * @param array $value
+     * @param string $value
      * @return void
      */
-    public function setAssignedToAttribute(array $value)
+    public function setAssignedToAttribute(string $value)
     {
+        $value = explode(',', $value);
         $this->attributes['assigned_to'] = json_encode($value);
     }
 
@@ -64,7 +65,7 @@ class Ticket extends Model
      */
     public function getStatusAttribute()
     {
-        return ucfirst($this->status);
+        return ucfirst($this->attributes['status']);
     }
 
     /**
@@ -76,5 +77,52 @@ class Ticket extends Model
     public function setStatusAttribute(string $value)
     {
         $this->attributes['status'] = strtolower($value);
+    }
+
+    /**
+     * Get query for filtering the projects.
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['status'] ?? false, function ($query, $status) {
+            $query->where('status', $status);
+        });
+
+        $query->when($filters['division'] ?? false, function ($query, $division) {
+            $query->where('division', $division);
+        });
+
+        $query->when($filters['user_id'] ?? false, function ($query, $user_id) {
+            $query->where('user_id', $user_id);
+        });
+
+        $query->when($filters['assigned_to'] ?? false, function ($query, $assigned_to) {
+            $query->where('assigned_to', $assigned_to);
+        });
+
+        $query->when($filters['project_id'] ?? false, function ($query, $project_id) {
+            $query->where('project_id', $project_id);
+        });
+
+        return $query;
+    }
+
+    /**
+     * Get the comments for the ticket.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Get the comments for the ticket.
+     * 
+     * @return array
+     */
+    public function getComments() {
+        return $this->comments()->get();
     }
 }

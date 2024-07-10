@@ -12,6 +12,9 @@ class ProjectsController extends Controller
 {
     /**
      * Display a listing of the projects.
+     * 
+     * @param Request $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
@@ -19,13 +22,18 @@ class ProjectsController extends Controller
         $per_page = $request->query('per_page') ? $request->query('per_page') : 15;
         $page = $request->page ? $request->page : 1;
 
-        $projects = QueryBuilder::for(Project::class)
-            ->allowedFilters(['status', 'division', 'user_id', 'assigned_to'])
-            ->allowedSorts('order', 'name', 'created_at', 'updated_at')
-            ->paginate($per_page, ['*'], 'page', $page)
-            ->appends(request()->query());
-        
-        return view('projects.index', compact('projects', 'filter'));
+        if (auth()->user()->hasRole('customer')) {
+            $projects = Project::where('user_id', auth()->user()->id)->paginate($per_page, ['*'], 'page', $page);
+            return view('projects.index', compact('projects', 'filter'));
+        } else {
+            $projects = QueryBuilder::for(Project::class)
+                ->allowedFilters(['status', 'division', 'user_id', 'assigned_to'])
+                ->allowedSorts('order', 'name', 'created_at', 'updated_at', 'deadline')
+                ->paginate($per_page, ['*'], 'page', $page)
+                ->appends(request()->query());
+            
+            return view('projects.index', compact('projects', 'filter'));
+        }
     }
 
     /**
@@ -39,6 +47,9 @@ class ProjectsController extends Controller
 
     /**
      * Enable filtering of the projects.
+     * 
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function filter(Request $request): RedirectResponse
     {
@@ -78,9 +89,15 @@ class ProjectsController extends Controller
     /**
      * Show the form for creating a new project.
      * Passing data to the view
+     * 
+     * @return \Illuminate\View\View
      */
     public function create()
     {
+        if (auth()->user()->hasRole('customer')) {
+            return redirect()->route('projects.index')->with('error', 'Non hai i permessi per creare un progetto!');
+        }
+
         $project = new Project();
         $customers = $project->customers();
         $team = $project->team_members();
@@ -91,6 +108,7 @@ class ProjectsController extends Controller
      * Store a newly created resource in storage.
      *
      * @param Request $request
+     * @return RedirectResponse
      */
     public function store(Request $request)
     {
@@ -120,16 +138,18 @@ class ProjectsController extends Controller
      * Display the specified project.
      *
      * @param int $id
+     * @return \Illuminate\View\View
      */
     public function show($id)
     {
-        return view('projects.show');
+        return view('projects.show', ['project' => Project::findOrFail($id)]);
     }
 
     /**
      * Show the form for editing the specified project.
      *
      * @param int $id
+     * @return \Illuminate\View\View
      */
 
     public function edit($id)
@@ -143,6 +163,9 @@ class ProjectsController extends Controller
 
     /**
      * Update project in storage.
+     * 
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function update(Request $request) : RedirectResponse
     {
@@ -157,6 +180,7 @@ class ProjectsController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
+     * @return RedirectResponse
      */
     public function destroy($id)
     {

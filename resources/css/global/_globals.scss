@@ -49,3 +49,18 @@ p {
 		background: #58a026;
 	}
 }
+
+.status {
+	&-Aperto {
+		color: green;
+	}
+
+	&-Chiuso {
+		color: $red;
+	}
+}
+
+#bf_orderby span {
+	width: 137px;
+	text-align: left;
+}

@@ -35,14 +35,6 @@ export default {
 
     plugins: [
         forms,
-        // pagination({
-        //     /* Customizations here... */
-        //     'wrapper': 'flex justify-center',
-        //     'wrapperClasses': 'flex justify-center',
-        //     'element': 'button',
-        //     'elementClasses': 'px-3 py-1 mx-1 bg-white border border-gray-300 text-gray-500 rounded',
-        //     'activeElement': 'button',
-        //     'activeElementClasses': 'px-3 py-1 mx-1 bg-accent-100 text-white rounded',
-        // }),
+        
     ],
 };

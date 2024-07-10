@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('division')->default('development');
             $table->string('status')->default('development');
             $table->string('assigned_to')->default('[]');
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('deadline')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }

@@ -14,6 +14,7 @@
 
         <!-- Styles -->
         @vite('resources/css/app.scss')
+        @vite('resources/css/tailwind.css')
         @yield('styles')
     </head>
     <body>

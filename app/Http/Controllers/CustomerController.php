@@ -15,12 +15,17 @@ class CustomerController extends Controller
      *
      * @return void
      */
-    public function index()
+    public function index(Request $request)
     {
         // Get users with role customer
-        $customers = Role::findByName('customer')->users;
+        // $customers = Role::findByName('customer')->users;
+        $filter = $request->query('filter') ? $request->query('filter') : 'all';
+        $per_page = $request->query('per_page') ? $request->query('per_page') : 15;
+        $page = $request->page ? $request->page : 1;
 
-        return view('customers.index', ['customers' => $customers]);
+        $customers = User::role('customer')->paginate($per_page, ['*'], 'page', $page)->appends(request()->query());
+
+        return view('customers.index', compact('customers', 'filter', 'per_page', 'page'));
     }
 
     /**
@@ -113,6 +118,19 @@ class CustomerController extends Controller
         $customer->address = $request->address;
 
         $customer->save();
+    }
+
+    /**
+     * Paginate the customers.
+     * 
+     * @param Request $request
+     * @return void
+     */
+    public function paginate(Request $request)
+    {
+        $page = $request->page;
+        $customers = User::paginate(15, ['*'], 'page', $page);
+        return view('customers.index', compact('customers'));
     }
 
     /**

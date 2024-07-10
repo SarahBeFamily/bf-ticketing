@@ -2,6 +2,15 @@
 
 @section('content')
 
+@php
+	$data_inizio = new DateTime($project->started_at);
+	$data_inizio = $data_inizio->format('Y-m-d');
+	$scadenza = new DateTime($project->deadline);
+	$scadenza = $scadenza->format('Y-m-d');
+
+	// dd($data_inizio);
+@endphp
+
 <div class="messages">
 	@if (session('success'))
 		<div class="alert alert-success">
@@ -42,11 +51,11 @@
 		</div>
 
 		<div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-			<label for="start_date">Data di inizio</label>
-			<input type="date" name="start_date" id="start_date" class="form-control" value="{{ $project->start_date }}">
+			<label for="started_at">Data di inizio</label>
+			<input type="date" name="started_at" id="started_at" class="form-control" value="{{ $data_inizio }}">
 
 			<label for="deadline">Scadenza</label>
-			<input type="date" name="deadline" id="deadline" class="form-control" value="{{ old('deadline') }}">
+			<input type="date" name="deadline" id="deadline" class="form-control" value="{{ $scadenza ?? old('deadline') }}">
 		</div>
 
 		<div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">

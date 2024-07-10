@@ -19,8 +19,8 @@
 		</div>
 
 		<div class="form-group">
-			<label for="start_date">Data di inizio</label>
-			<input type="date" name="start_date" id="start_date" class="form-control" value="{{ old('start_date') }}">
+			<label for="started_at">Data di inizio</label>
+			<input type="date" name="started_at" id="started_at" class="form-control" value="{{ old('started_at') }}">
 			
 			<label for="division">Reparto</label>
 			<select name="division" id="division">
