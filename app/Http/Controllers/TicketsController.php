@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\Ticket;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Attachment;
 use Illuminate\Support\Facades\Mail;
 use Spatie\QueryBuilder\QueryBuilder;
 use App\Notifications\TicketCreated;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class TicketsController extends Controller
 {
@@ -29,23 +31,37 @@ class TicketsController extends Controller
         $filter = $request->query('filter') ? $request->query('filter') : 'all';
         $per_page = $request->query('per_page') ? $request->query('per_page') : 15;
         $page = $request->page ? $request->page : 1;
-
-        $tickets = QueryBuilder::for(Ticket::class)
-            ->allowedIncludes(['projects', 'users'])
-            ->allowedFilters(['status', 'division', 'user_id', 'assigned_to'])
-            ->allowedSorts('order', 'name', 'created_at', 'updated_at', 'completed_at')
-            ->paginate($per_page, ['*'], 'page', $page)
-            ->appends(request()->query());
+        $currentUser = auth()->user();
+        $customers = User::role('customer')->get();
 
         // If customer, show only projects assigned to the user
         // If team, show all projects
-        if (auth()->user()->hasRole('customer')) {
-            $projects = Project::where('user_id', auth()->user()->id)->get();
+        if ($currentUser->hasRole('customer')) {
+            $projects = Project::where('user_id', $currentUser->id);
         } else {
             $projects = Project::all();
         }
+
+        // Query the tickets
+        // Cheeck if user is customer or team
+        if ($currentUser->hasRole('customer')) {
+            $tickets = QueryBuilder::for(Ticket::class)
+                ->where('user_id', $currentUser->id)
+                ->allowedIncludes(['projects'])
+                ->allowedFilters(['status', 'division', 'assigned_to', 'project_id'])
+                ->allowedSorts('order', 'name', 'created_at', 'updated_at', 'completed_at')
+                ->paginate($per_page, ['*'], 'page', $page)
+                ->appends(request()->query());
+        } else {
+            $tickets = QueryBuilder::for(Ticket::class)
+                ->allowedIncludes(['projects', 'customers'])
+                ->allowedFilters(['status', 'division', 'assigned_to', 'project_id', 'user_id'])
+                ->allowedSorts('order', 'name', 'created_at', 'updated_at', 'completed_at')
+                ->paginate($per_page, ['*'], 'page', $page)
+                ->appends(request()->query());
+        }
         
-        return view('tickets.index', compact('tickets', 'filter', 'projects'));
+        return view('tickets.index', compact('tickets', 'filter', 'projects', 'customers', 'per_page', 'page'));
     }
 
     /**
@@ -63,7 +79,7 @@ class TicketsController extends Controller
      * @param Request $request
      * @return RedirectResponse
      */
-    public function filters(Request $request): RedirectResponse
+    public function filter(Request $request): RedirectResponse
     {
         $slug = [];
         
@@ -94,12 +110,22 @@ class TicketsController extends Controller
 
     /**
      * Paginate the tickets.
+     * 
+     * @param Request $request
+     * @return \Illuminate\View\View
      */
     public function paginate(Request $request)
     {
         $page = $request->page;
-        $tickets = Ticket::paginate(15, ['*'], 'page', $page);
-        return view('tickets.index', compact('tickets'));
+        $user = auth()->user();
+
+        if ($user->hasRole('customer')) {
+            $tickets = Ticket::where('user_id', $user->id)->paginate(15, ['*'], 'page', $page);
+        } else {
+            $tickets = Ticket::paginate(15, ['*'], 'page', $page);
+        }
+
+        return $tickets;
     }
 
     /**
@@ -128,6 +154,7 @@ class TicketsController extends Controller
             'project_id' => 'required|exists:projects,id',
             'type' => 'required',
             'user_id' => 'required|exists:users,id',
+            'file.*' => 'mimes:pdf,png,jpg,doc,pdf,docx,pptx,zip|max:8048',
         ]);
 
         // Handle error
@@ -148,18 +175,40 @@ class TicketsController extends Controller
             ]), [
                 'status' => 'Aperto',
                 'assigned_to' => implode(',',$project_rel->assigned_to),
+                'division' => $project_rel->division,
                 ]
             )
         );
 
-        // if ($request->has('file')) {
-        //     $ticket->addMedia($request->file)->toMediaCollection('tickets');
-        // }
 
         // Check if tickets has been saved correctly
         if (!$ticket) {
             return Redirect::route('tickets.create')->with('error', 'Errore durante la creazione del ticket!');
         } else {
+            // Save the file if exists or if is an array of files
+            if ($request->hasFile('file')) { 
+                $files = $request->file('file');
+
+                foreach ($files as $f) {
+                    $fileName = time() . '_' . $f->getClientOriginalName();
+                    $filePath = $f->storeAs('uploads', $fileName, 'public');
+                    $filePath = $file->move(public_path('uploads'), $fileName);
+                    $media = Attachment::create([
+                        'filename' => $fileName,
+                        'path' => $filePath,
+                        'mime_type' => $f->getMimeType(), // 'image/jpeg'
+                        'size' => $f->getSize(),
+                        'ticket_id' => $ticket->id,
+                        'user_id' => auth()->user()->id,
+                        'project_id' => $request->project_id,
+                    ]);
+
+                    if (!$media) {
+                        return Redirect::route('tickets.create')->with('error', 'Errore durante il salvataggio del file!');
+                    }
+                }
+            }
+            
             if (is_array($project_rel->assigned_to) && count($project_rel->assigned_to) > 0) {
                 foreach ($project_rel->assigned_to as $assigned_to) {
                     $team_email = User::find($assigned_to)->email;
@@ -167,7 +216,11 @@ class TicketsController extends Controller
                     // TODO: Send email to the team
                     // Mail::to($team_email)->send(new TicketCreated($ticket, $message));
 
-                    // User::find($assigned_to)->notify(new TicketCreated($ticket, $message));
+                    // To DO: Send email to the customer
+                    // Mail::to(User::find($ticket->user_id)->email)->send(new TicketCreated($ticket));
+
+                    // Send notification
+                    User::find($assigned_to)->notify(new TicketCreated($ticket, $message));
                 }
             }
             
@@ -192,12 +245,19 @@ class TicketsController extends Controller
      * @param int $id
      * @return RedirectResponse
      */
-    public function close($id): RedirectResponse
+    public function close(Request $request): RedirectResponse
     {
-        $ticket = Ticket::find($id);
-        $ticket->status = 'Chiuso';
-        $ticket->save();
-        return Redirect::route('tickets.index')->with('success', 'Ticket chiuso con successo!');
+        $ticket = Ticket::find($request->ticket);
+        if ($ticket->status == 'Aperto') {
+            $ticket->update([
+                'status' => 'Chiuso',
+                'completed_at' => now(),
+            ]);
+
+            // To DO: Send email to the customer
+            // Mail::to(User::find($ticket->user_id)->email)->send(new TicketClosed($ticket));
+            return Redirect::route('tickets.index')->with('success', 'Ticket chiuso con successo!');
+        }           
     }
 
     /**

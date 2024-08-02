@@ -26,7 +26,12 @@
 
 			<div class="filtri my-10 flex items-center justify-between">
 				<div class="search">
-					<input type="text" class="form-control" placeholder="Cerca cliente">
+					{{-- Cerca cliente --}}
+					<form action="{{ route('customers.index') }}" method="GET">
+						@csrf
+						<label for="search" class="hidden">Cerca cliente</label>
+						<input type="text" class="form-control" name="search" placeholder="Cerca cliente">
+					</form>
 				</div>
 
 				{{-- To do: implementare l'ordinamento --}}

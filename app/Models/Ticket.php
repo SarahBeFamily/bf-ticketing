@@ -80,6 +80,28 @@ class Ticket extends Model
     }
 
     /**
+     * Set the division for the ticket, heritable from the project.
+     * 
+     * @param string $value
+     * @return void
+     */
+    public function setDivisionAttribute(string $value)
+    {
+        $this->attributes['division'] = $this->project->division;
+    }
+
+    /**
+     * Get the division for the ticket.
+     * 
+     * @return string
+     */
+    public function getDivisionAttribute()
+    {
+        return $this->project->division;
+    }
+    
+
+    /**
      * Get query for filtering the projects.
      */
     public function scopeFilter($query, array $filters)
@@ -124,5 +146,24 @@ class Ticket extends Model
      */
     public function getComments() {
         return $this->comments()->get();
+    }
+
+    /**
+     * Get the attachments for the ticket.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
+    /**
+     * Get the attachments for the ticket.
+     * 
+     * @return array
+     */
+    public function getAttachments() {
+        return $this->attachments()->get();
     }
 }

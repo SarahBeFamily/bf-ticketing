@@ -6,6 +6,12 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TicketsController;
 use App\Http\Controllers\CommentsController;
+use App\Models\Project;
+use App\Models\User;
+use App\Models\Ticket;
+use App\Models\Comment;
+use App\Models\Attachment;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,13 +25,24 @@ use App\Http\Controllers\CommentsController;
 */
 
 Route::get('/', function () {
-    return view('dashboard');
+    // Recall project, users, tickets, comments, attachments
+    $projects = Project::all();
+    $users = User::all();
+    $customers = User::role('customer')->get();
+    $tickets = Ticket::all();
+    $comments = Comment::all();
+    $attachments = Attachment::all();
+
+    // Return the view with the data
+    return view('dashboard', compact('projects', 'users', 'customers', 'tickets', 'comments', 'attachments'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Routes for the TicketsController
 Route::get('/tickets', [TicketsController::class, 'index'])->name('tickets.index');
 Route::get('/tickets/nuovo', [TicketsController::class, 'create'])->name('tickets.create');
+Route::patch('/tickets', [TicketsController::class, 'filter'])->name('tickets.filter');
 Route::post('/tickets', [TicketsController::class, 'store'])->name('tickets.store');
+Route::get('/tickets/{ticket}/chiudi', [TicketsController::class, 'close'])->name('tickets.close');
 Route::get('/tickets/{ticket}', [TicketsController::class, 'show'])->name('tickets.show');
 
 // Routes for the CommentsController
@@ -43,10 +60,14 @@ Route::group(['middleware' => ['role:customer|team']], function () {
     Route::get('/progetti/{project}', [ProjectsController::class, 'show'])->name('projects.show');
 });
 
+// Routes for profile (all roles)
+Route::get('/profilo', [ProfileController::class, 'show'])->name('profile.show');
+Route::get('/profilo/notifiche', [ProfileController::class, 'notifications'])->name('profile.notifications');
+
 Route::group(['middleware' => ['role:team']], function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profilo', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profilo', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profilo', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Routes for Team
     Route::get('/team', function () {return view('team.index');})->name('team');

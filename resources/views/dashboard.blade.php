@@ -1,17 +1,57 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
+@section('content')
+    <div class="dashboard">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Dashboard</h1>
+                    @can('edit users', App\Models\User::class)
+                        <img class="h-12 w-12 rounded-full" src="{{ Auth::user()->avatar() }}" alt="{{ Auth::user()->name }}">
+                    @endcan
+                    <p>Benvenuto {{ Auth::user()->name }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <h2>Numeri e statistiche</h2>
+                    <p>Di seguito trovi alcune statistiche relative ai progetti, ai clienti e ai ticket aperti.</p>
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card mb-5 flex content-center">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Progetti</h3>
+                                        <p class="card-text">Numero di progetti attivi: {{ $projects->count() }}</p>
+                                    </div>
+
+                                </div>
+        
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Clienti</h3>
+                                        <p class="card-text">Numero di clienti: {{ $customers->count() }}</p>
+                                    </div>
+
+                                </div>
+        
+                                <div class="card">
+                                    <div class="card-body">
+                                        @php
+                                            $open_tickets = $tickets->where('status', 'Aperto');
+                                        @endphp
+                                        <h3 class="card-title">Ticket</h3>
+                                        <p class="card-text">Numero di ticket: {{ $tickets->count() }}</p>
+                                        <p class="card-text">Numero di ticket aperti: {{ $open_tickets->count() }}</p>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+@endsection

@@ -48,6 +48,19 @@ p {
 	&.alert-success {
 		background: #58a026;
 	}
+
+	&.alert-danger,
+	&.alert-error {
+		background: #f6606e;
+	}
+
+	&.alert-info {
+		background: #17a2b8;
+	}
+
+	&.alert-warning {
+		background: #ffc107;
+	}
 }
 
 .status {
@@ -63,4 +76,71 @@ p {
 #bf_orderby span {
 	width: 137px;
 	text-align: left;
+}
+
+datalist,
+.safari-datalist {
+	position: absolute;
+	max-height: 20em;
+	border: 0 none;
+	overflow-x: hidden;
+	overflow-y: auto;
+	top: 45px;
+	width: 200%;
+	z-index: 9999;
+
+	@include respond-to('phone') {
+		width: 100%;
+		// top: 205px;
+	}
+
+	@include respond-to('small-tablet') {
+		width: 100%;
+	}
+
+	&.open {
+		display: block;
+
+		.option {
+			display: flex;
+		}
+	}
+
+	&[input-focus="projects"] {
+		
+		@include respond-to('phone') {
+			left: 0;
+			top: 220%;
+		}
+	}
+
+	&#directs {
+		left: -6px;
+	}
+
+	option,
+	.option {
+		// font-size: toRem(14);
+		padding: 12px 26px;
+		background-color: #e8e9eb;
+		color: var(--primary-color);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-radius: 6px;
+		cursor: pointer;
+		display: none;
+
+		&:not(:last-child) {
+			border-bottom: 1px solid white;
+		}
+
+		/* option active styles */
+		&:hover,
+		&:focus {
+			color: #fff;
+			background-color: var(--accent);
+			outline: 0 none;
+		}
+	}
 }

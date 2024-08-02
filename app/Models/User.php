@@ -46,4 +46,15 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * User avatar
+     */
+    public function avatar()
+    {
+        // If user is team member
+        if ($this->hasRole('team')) {
+            return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?s=80';
+        }
+    }
 }

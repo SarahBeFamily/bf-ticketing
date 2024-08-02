@@ -1,10 +1,3 @@
-@php
-	/**
-	 * Screen to show the list of tickets
-	 * Only for Team members
-	 */
-@endphp
-
 @extends('layouts.app')
 
 @section('content')
@@ -13,6 +6,10 @@
 	$filter = request('filter');
 	$division = $filter['division'] ?? '';
 	$status = $filter['status'] ?? '';
+	$project_id = isset($filter['project_id']) ? Helper::getElementName('project', $filter['project_id']) : '';
+	$user_id = isset($filter['user_id']) ? Helper::getElementName('user', $filter['user_id']) : '';
+
+	echo $project_id;
 @endphp
 
 	<div class="wrapper flex flex-col justify-between">
@@ -41,7 +38,7 @@
 			<div class="filtri my-10 flex items-center justify-between">
 				<div>
 					<b>Filtra per:</b>
-					<form action="" method="post">
+					<form action="{{ route('tickets.filter') }}" method="post">
 						@csrf
 						@method('PATCH')
 
@@ -65,15 +62,45 @@
 								</select>
 							</label>
 
-							<label for="projects" class="col-span-3 font-medium leading-6 text-secondary mx-5">
+							<label for="project_id" class="col-span-3 font-medium leading-6 text-secondary mx-5">
 								<span class="block">Progetto</span>
-								<select name="projects" id="projects">
-									<option value="">Tutti</option>
-									@foreach ($projects as $project)
-										<option value="{{ $project->id }}" @selected($project->id == $project->id)>{{ $project->name }}</option>
-									@endforeach
-								</select>
+								<div class="input-text relative">
+									<input class="fake project_id" subject="project_id" role="combobox" type="text" name="" list="" data-list-id="project_id" value="{{ $project_id }}" placeholder="Cerca progetto">
+									<input type="hidden" name="project_id" value="">
+									<datalist id="project_id">
+										@foreach ($projects as $project)
+											<option value="{{ $project->id }}">{{ $project->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-project_id" class="safari-only safari-datalist">
+										@foreach ($projects as $project)
+											<div class="option" value="{{ $project->id }}"></div>
+										@endforeach
+									</div>
+								</div>
 							</label>
+
+							@can('edit users')
+
+							<label for="user_id" class="col-span-3 font-medium leading-6 text-secondary mr-5">
+								<span class="block">Cliente</span>
+								<div class="input-text relative">
+									<input class="fake user_id" subject="user_id" role="combobox" type="text" name="" list="" data-list-id="user_id" value="{{ $user_id }}" placeholder="Cerca cliente">
+									<input type="hidden" name="user_id" value="">
+									<datalist id="user_id">
+										@foreach ($customers as $customer)
+											<option value="{{ $customer->id }}">{{ $customer->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-user_id" class="safari-only safari-datalist">
+										@foreach ($customers as $customer)
+											<div class="option" value="{{ $customer->id }}"></div>
+										@endforeach
+									</div>
+								</div>
+							</label>
+								
+							@endcan
 
 							<button type="submit" class="btn-primary">Filtra</button>
 						</div>
@@ -119,6 +146,14 @@
 									<path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 01-9.274 0C3.985 17.585 3 16.402 3 15.055z" />
 								</svg>
 								{{ $project->division }} - {{ $ticket->type }}
+							</div>
+
+							<div class="mt-2 flex items-center text-sm text-gray-500">
+								<svg class="details" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.325a41.622 41.622 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25zM10 10a1 1 0 00-1 1v.01a1 1 0 001 1h.01a1 1 0 001-1V11a1 1 0 00-1-1H10z" clip-rule="evenodd" />
+									<path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 01-9.274 0C3.985 17.585 3 16.402 3 15.055z" />
+								</svg>
+								{{ $project->name }}
 							</div>
 
 							<div class="mt-2 flex items-center text-sm text-gray-500">
@@ -176,22 +211,30 @@
 					<div class="mt-5 flex lg:ml-4 lg:mt-0">
 						<a href="{{ route('tickets.show', $ticket) }}" class="hidden sm:block">
 							<button type="button" class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-							<svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-								<path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
-							</svg>
-							Leggi / Rispondi
+			
+							@if ($ticket->status == 'Aperto')
+								<svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+								</svg>
+								Leggi / Rispondi
+							@else
+								Visualizza
+							@endif
+							
 							</button>
 						</a>
 
 						@can('edit users')
-							<a href="#" class="sm:ml-3">
-								<button type="button" class="btn-primary inline-flex px-3 py-2">
-								<svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-								</svg>
-								Chiudi
-								</button>
-							</a>
+							@if ($ticket->status == 'Aperto')
+								<a href="{{ route('tickets.close', $ticket) }}" class="sm:ml-3">
+									<button type="button" class="btn-primary inline-flex px-3 py-2">
+									<svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+										<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+									</svg>
+									Chiudi
+									</button>
+								</a>
+							@endif
 						@endcan
 
 						<!-- Dropdown -->
@@ -229,7 +272,12 @@
 
 		<footer class="mt-10">
 			<div class="pagination py-10">
-				{{ $tickets->links() }}
+				@if ($tickets->count() == 0)
+					<p>Non ci sono ticket</p>
+					
+				@else
+					{{ $tickets->links() }}
+				@endif
 			</div>
 		</footer>
 	</div>

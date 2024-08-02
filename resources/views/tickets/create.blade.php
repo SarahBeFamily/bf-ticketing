@@ -4,13 +4,11 @@
 
 	<div class="messages">
 		@if ($errors->any())
-			<div class="alert alert-danger">
-				<ul>
-					@foreach ($errors->all() as $error)
-						<li>{{ $error }}</li>
-					@endforeach
-				</ul>
-			</div>
+			<ul>
+				@foreach ($errors->all() as $error)
+					<li class="alert alert-error">{{ $error }}</li>
+				@endforeach
+			</ul>
 		@endif
 	</div>
 
@@ -19,7 +17,7 @@
 		<p>Apri un nuovo ticket riferito ad un progetto</p>
 	</div>
 	
-	<form action="{{ route('tickets.store') }}" method="POST">
+	<form action="{{ route('tickets.store') }}" method="POST" enctype="multipart/form-data">
 		@csrf
 
 		<div class="flex flex-wrap">
@@ -81,6 +79,18 @@
 				  </div>
 				</div>
 			</div> --}}
+			<div class="form-group my-4">
+				<label for="file" class="block">Aggiungi allegati</label>
+				<input 
+                        type="file" 
+                        name="file[]" 
+                        id="inputFile"
+                        class="form-control @error('file') is-invalid @enderror" multiple>
+      
+                    @error('file')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+			</div>
 
 			<input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
 

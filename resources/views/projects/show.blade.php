@@ -14,8 +14,8 @@
 
 	<div class="dettagli">
 		<p>Dettagli</p>
-		<p>Data di inizio: {{ $project->started_at }}</p>
-		<p>Scadenza: {{ $project->deadline }}</p>
+		<p>Data di inizio: {{ date('d/m/Y', strtotime($project->started_at)) }}</p>
+		<p>Scadenza: {{ date('d/m/Y', strtotime($project->deadline)) }}</p>
 		<p>Stato: {{ $project->status }}</p>
 		<p>Reparto: {{ $project->division }}</p>
 		<p>Referente: 
@@ -37,14 +37,18 @@
 			@endif
 		</p>
 	</div>
-
+	
+	@can('edit users')
 	<div class="actions">
+		
 		<a href="{{ route('projects.edit', $id) }}" class="button btn-primary">Modifica</a>
+
 		<form action="{{ route('projects.destroy', $id) }}" method="POST">
 			@csrf
 			@method('DELETE')
 			<button type="submit" class="button btn-primary">Elimina</button>
 		</form>
 	</div>
+	@endcan
 
 @endsection

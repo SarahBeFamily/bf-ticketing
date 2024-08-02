@@ -134,6 +134,18 @@ class CustomerController extends Controller
     }
 
     /**
+     * Search for a customer.
+     * 
+     * @param Request $request
+     */
+    public function search(Request $request)
+    {
+        $search = $request->search;
+        $customers = User::where('name', 'like', '%' . $search . '%')->paginate(15);
+        return view('customers.index', compact('customers'));
+    }
+
+    /**
      * Remove the specified customer from storage.
      *
      * @param int $id
