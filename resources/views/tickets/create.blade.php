@@ -2,15 +2,29 @@
 
 @section('content')
 
-	<div class="messages">
-		@if ($errors->any())
+<div class="messages">
+	@if (session('success'))
+		<div class="alert alert-success">
+			{{ session('success') }}
+		</div>
+	@elseif (session('error'))
+		<div class="alert alert-error">
+			{{ session('error') }}
+		</div>
+	@elseif (session('warning'))
+		<div class="alert alert-warning">
+			{{ session('warning') }}
+		</div>
+	@elseif ($errors->any())
+		<div class="alert alert-error">
 			<ul>
 				@foreach ($errors->all() as $error)
 					<li class="alert alert-error">{{ $error }}</li>
 				@endforeach
 			</ul>
-		@endif
-	</div>
+		</div>
+	@endif
+</div>
 
 	<div class="mb-10">
 		<h1>Nuovo Ticket</h1>
@@ -20,10 +34,10 @@
 	<form action="{{ route('tickets.store') }}" method="POST" enctype="multipart/form-data">
 		@csrf
 
-		<div class="flex flex-wrap">
-			<div class="form-group mb-5 basis-full relative">
-				<label for="subject" class="block">Oggetto</label>
-				<input class="text" type="text" name="subject" id="subject" value="{{ old('subject') }}" @required(true)>
+		<div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+			<div class="form-group sm:col-span-full relative">
+				<label for="subject" class="block text-sm font-medium leading-6 text-gray-900">Oggetto</label>
+				<input class="form-control block w-full" type="text" name="subject" id="subject" value="{{ old('subject') }}" @required(true)>
 				
 				@error('subject')
 					<div class="absolute left-full -mt-7 -ml-8">
@@ -33,19 +47,26 @@
 				@enderror
 			</div>
 			
-			<div class="form-group mb-5 basis-1/2">
-				<label for="type" class="block">Tipologia</label>
-				<select name="type" id="type" class="form-control">
-					<option value="Richiesta">Richiesta</option>
-					<option value="Segnalazione">Segnalazione</option>
-					<option value="Problema">Problema</option>
+			<div class="form-group max-sm:col-span-full col-span-3">
+				<label for="type" class="block text-sm font-medium leading-6 text-gray-900">Tipologia</label>
+				<select name="type" id="type" class="form-control block w-full">
+					<option value="">Seleziona una tipologia</option>
+					@if (is_array($settings->get('ticket_type')))
+						@foreach ($settings->get('ticket_type') as $type)
+							<option value="{{ $type }}">{{ $type }}</option>
+						@endforeach
+					@else
+						<option value="Bug">Bug</option>
+						<option value="Richiesta">Richiesta</option>
+						<option value="Altro">Altro</option>
+					@endif
 				</select>
 			</div>
 	
 			@if (!$ticket->project_id)
-				<div class="form-group mb-5 basis-1/2">
-					<label for="project_id" class="block">Progetto di riferimento</label>
-					<select name="project_id" id="project_id" class="form-control">
+				<div class="form-group max-sm:col-span-full col-span-3">
+					<label for="project_id" class="block text-sm font-medium leading-6 text-gray-900">Progetto di riferimento</label>
+					<select name="project_id" id="project_id" class="form-control block w-full">
 						<option value="">Seleziona un progetto</option>
 						@foreach ($projects as $project)
 							<option value="{{ $project->id }}">{{ $project->name }}</option>
@@ -56,9 +77,9 @@
 				<input type="hidden" name="project_id" value="{{ $ticket->project_id }}">
 			@endif
 	
-			<div class="form-group basis-full">
-				<label for="content" class="block">Messaggio</label>
-				<textarea name="content" id="content" class="form-control">{{ old('content') }}</textarea>
+			<div class="form-group col-span-full">
+				<label for="content" class="block text-sm font-medium leading-6 text-gray-900">Messaggio</label>
+				<textarea name="content" id="content" class="form-control block w-full">{{ old('content') }}</textarea>
 			</div>
 	
 			{{-- <div class="basis-full">
@@ -79,13 +100,13 @@
 				  </div>
 				</div>
 			</div> --}}
-			<div class="form-group my-4">
-				<label for="file" class="block">Aggiungi allegati</label>
+			<div class="form-group my-4 col-span-full">
+				<label for="file" class="block text-sm font-medium leading-6 text-gray-900">Aggiungi allegati</label>
 				<input 
                         type="file" 
                         name="file[]" 
                         id="inputFile"
-                        class="form-control @error('file') is-invalid @enderror" multiple>
+                        class="form-control block w-full @error('file') is-invalid @enderror" multiple>
       
                     @error('file')
                         <span class="text-danger">{{ $message }}</span>

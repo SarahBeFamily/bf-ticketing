@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Notification;
 
 class ProfileController extends Controller
 {
@@ -66,5 +67,34 @@ class ProfileController extends Controller
         return view('profile.show', [
             'user' => $request->user(),
         ]);
+    }
+
+    /**
+     * Display the user's notifications.
+     */
+    public function notifications(): View
+    {
+        $notifications = Notification::where('user_id', auth()->id())->get();
+        return view('profile.notifications', compact('notifications'));
+    }
+
+    /**
+     * Delete all the user's notifications.
+     */
+    public function notificationDestroy(): RedirectResponse
+    {
+        Notification::where('user_id', auth()->id())->delete();
+        return Redirect::route('profile.notifications')->with('success', 'Notifiche eliminate con successo.');
+    }
+
+    /**
+     * Delete a single notification.
+     * 
+     * @param int $id
+     */
+    public function notificationDestroySingle(int $id): RedirectResponse
+    {
+        Notification::where('id', $id)->delete();
+        return Redirect::route('profile.notifications')->with('success', 'Notifica eliminata con successo.');
     }
 }

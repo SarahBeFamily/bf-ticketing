@@ -20,7 +20,7 @@ class Project extends Model
         'name',
         'description',
         'division',
-        'user_id',
+        'company_id',
         'status',
         'assigned_to',
         'started_at',

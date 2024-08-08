@@ -20,9 +20,11 @@ class Ticket extends Model
         'content',
         'project_id',
         'status',
+        'division',
         'type',
         'user_id',
         'assigned_to',
+        'company_id',
         'completed_at',
     ];
 
@@ -37,13 +39,23 @@ class Ticket extends Model
     }
 
     /**
+     * Get the company that owns the ticket.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
      * Get the assigned users for the ticket.
      *
      * @return array
      */
     public function getAssignedToAttribute()
     {
-        return json_decode($this->assigned_to, true);
+        return json_decode($this->attributes['assigned_to']);
     }
 
     /**
@@ -87,7 +99,7 @@ class Ticket extends Model
      */
     public function setDivisionAttribute(string $value)
     {
-        $this->attributes['division'] = $this->project->division;
+        $this->attributes['division'] = $value;
     }
 
     /**
@@ -165,5 +177,15 @@ class Ticket extends Model
      */
     public function getAttachments() {
         return $this->attachments()->get();
+    }
+
+    /**
+     * Get the customer that opened the ticket.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -3,9 +3,12 @@
 @section('content')
 
 @php
+// dd($companies);
 	$filter = request('filter');
 	$division = $filter['division'] ?? '';
 	$status = $filter['status'] ?? '';
+	$company_id = isset($filter['company_id']) ? Helper::getElementName('company', $filter['company_id']) : '';
+	$referente = isset($filter['assigned_to']) ? Helper::getElementName('user', $filter['assigned_to']) : '';
 @endphp 
 
 	<div class="wrapper flex flex-col justify-between">
@@ -19,13 +22,33 @@
 					<div class="alert alert-error">
 						{{ session('error') }}
 					</div>
+				@elseif (session('warning'))
+					<div class="alert alert-warning">
+						{{ session('warning') }}
+					</div>
+				@elseif ($errors->any())
+					<div class="alert alert-error">
+						<ul>
+							@foreach ($errors->all() as $error)
+								<li class="alert alert-error">{{ $error }}</li>
+							@endforeach
+						</ul>
+					</div>
 				@endif
 			</div>
 		
 			<header class="progetti flex items-center justify-between">
 				<div class="basis-2/4">
 					<h1 class="mb-5">Progetti</h1>
-					<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Saepe iste cupiditate accusamus minus sapiente hic dignissimos dolorem laudantium nesciunt. Facilis, nam repellendus in alias ipsa minus laborum aperiam eos veniam.</p>
+					@can('edit users')
+						<p>
+							Area progetti. Qui puoi visualizzare tutti i progetti attivi e completati.
+						</p>
+					@else
+						<p>
+							Area progetti. Qui puoi visualizzare tutti i progetti attivi e completati assegnati alla tua azienda.
+						</p>
+					@endcan
 				</div>
 		
 				@can('edit users', App\Models\User::class)
@@ -33,10 +56,10 @@
 				@endcan
 			</header>
 			
-			<div class="filtri my-10 flex items-center justify-between">
+			<div class="filtri my-10 flex items-end justify-between">
 				<div>
 					<b>Filtra per:</b>
-					<form action="{{ route('projects.filter', $projects) }}" method="post">
+					<form id="filtra" action="{{ route('projects.filter', $projects) }}" method="POST">
 						@csrf
 						@method('PATCH')
 			
@@ -45,43 +68,110 @@
 								<span class="block">Reparto</span>
 								<select name="division" id="division">
 									<option value="">Tutti</option>
-									<option value="Grafica" @selected($division == 'Grafica')>Grafica</option>
-									<option value="Web" @selected($division == 'Web')>Web</option>
-									<option value="Social" @selected($division == 'Social')>Social</option>
+									@if (is_array($settings->get('division')))
+										@foreach ($settings->get('division') as $division)
+											<option value="{{ $division }}" @selected($division == $division)>{{ $division }}</option>
+										@endforeach
+									@else
+										<option value="Grafica" @selected($division == 'Grafica')>Grafica</option>
+										<option value="Web" @selected($division == 'Web')>Web</option>
+										<option value="Social" @selected($division == 'Social')>Social</option>
+									@endif
 								</select>
 							</label>
 						
-							<label for="status" class="col-span-3 font-medium leading-6 text-secondary mx-5">
+							<label for="status" class="col-span-3 font-medium leading-6 text-secondary ml-5">
 								<span class="block">Stato</span>
 								<select name="status" id="status">
 									<option value="">Tutti</option>
-									<option value="In corso" @selected($status == 'In corso')>In corso</option>
-									<option value="Completato" @selected($status == 'Completato')>Completato</option>
-									<option value="In attesa" @selected($status == 'In attesa')>In attesa</option>
+									@if (is_array($settings->get('project_status')))
+										@foreach ($settings->get('project_status') as $status)
+											<option value="{{ $status }}" @selected($status == $status)>{{ $status }}</option>
+										@endforeach
+									@else
+										<option value="In corso" @selected($status == 'In corso')>In corso</option>
+										<option value="Completato" @selected($status == 'Completato')>Completato</option>
+										<option value="In attesa" @selected($status == 'In attesa')>In attesa</option>
+									@endif
 								</select>
 							</label>
-			
+
+							@can('edit users')
+							<label for="company_id" class="col-span-3 font-medium leading-6 text-secondary ml-5">
+								<span class="block">Azienda</span>
+								<div class="input-text relative">
+									<input class="fake company_id" subject="company_id" role="combobox" type="text" name="" list="" data-list-id="company_id" value="{{ $company_id }}" placeholder="Cerca azienda">
+									<input type="hidden" name="company_id" value="">
+									<datalist id="company_id">
+										@foreach ($companies as $company)
+											<option value="{{ $company->id }}">{{ $company->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-company_id" class="safari-only safari-datalist">
+										@foreach ($companies as $company)
+											<div class="option" value="{{ $company->id }}"></div>
+										@endforeach
+									</div>
+								</div>
+							</label>
+							@endcan
+
+							<label for="assigned_to" class="col-span-3 font-medium leading-6 text-secondary mx-5">
+								<span class="block">Referente</span>
+								<div class="input-text relative">
+									<input class="fake assigned_to" subject="user" role="combobox" type="text" name="" list="" data-list-id="assigned_to" value="{{ $referente }}" placeholder="Cerca referente">
+									<input type="hidden" name="assigned_to" value="">
+									<datalist id="assigned_to">
+										@foreach ($users as $user)
+											<option value="{{ $user->id }}">{{ $user->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-assigned_to" class="safari-only safari-datalist">
+										@foreach ($users as $user)
+											<div class="option" value="{{ $user->id }}"></div>
+										@endforeach
+									</div>
+								</div>
+							</label>
+
+							<input type="hidden" name="sort" value="">
 							<button type="submit" class="btn-primary">Filtra</button>
 						</div>
 			
 					</form>
-					<div class="filtri-attivi">
-						@if (request('division'))
-							<span>Reparto: {{ ucfirst(request('division')) }}</span>
-						@endif
-			
-						@if (request('status'))
-							<span>Stato: {{ ucfirst(request('status')) }}</span>
-						@endif
-					</div>
 				</div>
 
-				<div class="ordine">
-					<button class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
+				<div class="ordine relative transition duration-150 ease-in-out" x-data="{ open: '' }">
+					<button @click="open = ! open" class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
 						<span>Ordina per</span>
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="h-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
 					</button>
+
+					<ul id="dropdown-ordina-projects" class="dropdown-ordina-projects absolute bg-secondary text-white w-full" :class="{'block': open, 'hidden': ! open}">
+						<li data-orderby="deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↑</li>
+						<li data-orderby="-deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↓</li>
+						<li data-orderby="started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↑</li>
+						<li data-orderby="-started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↓</li>
+					</ul>
 				</div>
+			</div>
+
+			<div class="filtri-attivi mb-2">
+				@if ($division || $status || $company_id || $referente)
+					<span>Filtri attivi:</span>
+					@if ($division)
+						<span class="bg-secondary text-white px-2 py-1 rounded-full mr-2">{{ $division }}</span>
+					@endif
+					@if ($status)
+						<span class="bg-secondary text-white px-2 py-1 rounded-full mr-2">{{ $status }}</span>
+					@endif
+					@if ($company_id)
+						<span class="bg-secondary text-white px-2 py-1 rounded-full mr-2">{{ $company_id }}</span>
+					@endif
+					@if ($referente)
+						<span class="bg-secondary text-white px-2 py-1 rounded-full mr-2">{{ $referente }}</span>
+					@endif
+				@endif
 			</div>
 		
 		</div>
@@ -92,19 +182,25 @@
 
 				@php
 					$bg = $i % 2 == 0 ? 'bg-gray-100 ' : '';
-					$customer = App\Models\User::find($project->user_id);
-					$user = App\Models\User::find($project->assigned_to);
+					$company = App\Models\Company::find($project->company_id) ?? null;
+					$compWorkers = $company ? json_decode($company->workers) : [];
 					$referenti = [];
-					if ($user) {
-						foreach ($user as $team) {
-							$referenti[] = $team->name;
-						}
+					if ($project->assigned_to) {
+						$referenti = is_array($project->assigned_to) ? App\Models\User::whereIn('id', $project->assigned_to)->pluck('name')->toArray() : [$user->name];
 					}
+					$workers = !empty($compWorkers) ? App\Models\User::whereIn('id', $compWorkers)->pluck('name')->toArray() : [];
 				@endphp
 				<div class="{{ $bg }}lg:flex lg:items-center lg:justify-between border-b border-gray-300 p-5">
 					<div class="min-w-0 flex-1">
 						<h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">{{ $project->name }}</h2>
 						<div class="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
+							@if ($company)
+								<div class="mt-2 flex items-center text-sm text-gray-500">
+									<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" fill="currentColor" aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve" width="64px" height="64px"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M328.776,104.453V39.385H143.839v65.068h-41.097v164.386h106.595l-3.853-30.821h61.645l-3.853,30.821h106.595V104.453 H328.776z M308.227,104.453H164.388V59.934h143.839V104.453z"></path> </g> </g> <g> <g> <polygon points="260.709,289.388 256.857,320.213 215.759,320.213 211.906,289.388 102.743,289.388 102.743,433.229 369.873,433.229 369.873,289.388 "></polygon> </g> </g> <g> <g> <rect x="410.969" y="104.457" width="61.647" height="328.773"></rect> </g> </g> <g> <g> <rect y="104.457" width="61.647" height="328.773"></rect> </g> </g> </g></svg>
+									{{ $company->name }}
+								</div>
+							@endif
+
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 									<path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.325a41.622 41.622 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25zM10 10a1 1 0 00-1 1v.01a1 1 0 001 1h.01a1 1 0 001-1V11a1 1 0 00-1-1H10z" clip-rule="evenodd" />
@@ -113,6 +209,7 @@
 								{{ $project->division }}
 							</div>
 
+							@if(!empty($workers))
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 									<g stroke-width="0"></g>
@@ -122,8 +219,9 @@
 										<path d="M12.0002 14.5C6.99016 14.5 2.91016 17.86 2.91016 22C2.91016 22.28 3.13016 22.5 3.41016 22.5H20.5902C20.8702 22.5 21.0902 22.28 21.0902 22C21.0902 17.86 17.0102 14.5 12.0002 14.5Z"></path> 
 									</g>
 								</svg>
-								{{ $customer->name }}
+								{{ implode(', ', $workers) }}
 							</div>
+							@endif
 
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -146,6 +244,16 @@
 									</svg>
 					
 									Scadenza {{ date('d/m/Y', strtotime($project->deadline)) }}
+								</div>
+							@endif
+
+							@if ($project->status)
+								<div class="mt-2 flex items-center text-sm text-gray-500">
+									<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+										<path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5a.75.75 0 01.55-.24z" clip-rule="evenodd" />
+										<path fill-rule="evenodd" d="M10 12a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 12z" clip-rule="evenodd" />
+									</svg>
+									{{ $project->status }}
 								</div>
 							@endif
 						</div>
@@ -217,7 +325,13 @@
 
 		<footer class="mt-10">
 			<div class="pagination py-10">
-				{{ $projects->links() }}
+				@if (is_array($projects) && count($projects) == 0)
+					<p class="text-center">Non ci sono progetti</p>
+				@elseif ($projects->count() > 0)
+					{{ $projects->links() }}
+				@elseif ($projects->count() == 0)
+					<p class="text-center">Non ci sono progetti</p>
+				@endif
 			</div>
 		</footer>
 	</div>

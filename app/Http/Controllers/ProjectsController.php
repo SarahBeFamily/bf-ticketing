@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Company;
 use App\Models\Project;
+use App\Models\User;
+use App\Models\SystemSetting;
 use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class ProjectsController extends Controller
 {
@@ -18,31 +22,36 @@ class ProjectsController extends Controller
      */
     public function index(Request $request)
     {
-        $filter = $request->query('filter') ? $request->query('filter') : 'all';
+        $filter = $request->query('filter') ? $request->query('filter') : '';
         $per_page = $request->query('per_page') ? $request->query('per_page') : 15;
         $page = $request->page ? $request->page : 1;
+        $settings = SystemSetting::allSettingsCollection();
+        $users = User::role('team')->get();
 
         if (auth()->user()->hasRole('customer')) {
-            $projects = Project::where('user_id', auth()->user()->id)->paginate($per_page, ['*'], 'page', $page);
-            return view('projects.index', compact('projects', 'filter'));
+            $companies = Company::where('workers', 'LIKE', '%'.auth()->user()->id.'%')->first();
+            // $projects = $companies ? Project::where('company_id', $companies->id)->paginate($per_page, ['*'], 'page', $page) : [];
+            if ($companies) {
+                $projects = QueryBuilder::for(Project::where('company_id', $companies->id))
+                ->allowedFilters(['status', 'division', 'company_id', 'assigned_to'])
+                ->allowedSorts('started_at', 'deadline', '-started_at', '-deadline')
+                ->paginate($per_page, ['*'], 'page', $page)
+                ->appends(request()->query());
+            } else {
+                return Redirect::route('dashboard')->with('error', 'Non sei stato assegnato ad alcuna azienda cliente, contatta l\'amministratore per risolvere!');
+            }
+
         } else {
+            $companies = Company::all();
             $projects = QueryBuilder::for(Project::class)
-                ->allowedFilters(['status', 'division', 'user_id', 'assigned_to'])
-                ->allowedSorts('order', 'name', 'created_at', 'updated_at', 'deadline')
+                ->allowedFilters(['status', 'division', 'company_id', 'assigned_to'])
+                ->allowedSorts('started_at', 'deadline', '-started_at', '-deadline')
                 ->paginate($per_page, ['*'], 'page', $page)
                 ->appends(request()->query());
             
-            return view('projects.index', compact('projects', 'filter'));
         }
-    }
 
-    /**
-     * Enable sorting of the projects.
-     */
-    public function sort(Request $request)
-    {
-        $projects = Project::orderBy($request->sort_by, $request->sort_order)->paginate(15);
-        return view('projects.index', compact('projects'));
+        return view('projects.index', compact('projects', 'companies', 'users', 'settings', 'filter'));
     }
 
     /**
@@ -63,12 +72,16 @@ class ProjectsController extends Controller
             $slug[] = 'filter[status]='.$request->status;
         }
 
-        if ($request->has('user_id') && $request->user_id != '') {
-            $slug[] = 'filter[user_id]='.$request->user_id;
+        if ($request->has('company_id') && $request->company_id != '') {
+            $slug[] = 'filter[company_id]='.$request->company_id;
         }
 
         if ($request->has('assigned_to') && $request->assigned_to != '') {
             $slug[] = 'filter[assigned_to]='.$request->assigned_to;
+        }
+
+        if ($request->has('sort') && $request->sort != '') {
+            $slug[] = 'sort='.$request->sort;
         }
 
         $slug = implode('&', $slug);
@@ -101,7 +114,9 @@ class ProjectsController extends Controller
         $project = new Project();
         $customers = $project->customers();
         $team = $project->team_members();
-        return view('projects.create', compact('customers', 'team'));
+        $settings = SystemSetting::allSettingsCollection();
+        $companies = Company::all();
+        return view('projects.create', compact('customers', 'companies', 'team', 'settings'));
     }
 
     /**
@@ -110,13 +125,12 @@ class ProjectsController extends Controller
      * @param Request $request
      * @return RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request) : RedirectResponse
     {
         // Validate the request...
         $request->validate([
             'name' => 'required|unique:projects|max:255',
-            'description' => 'required',
-            'user_id' => 'required|exists:users,id',
+            'company_id' => 'required|exists:companies,id',
             'assigned_to' => 'required|array',
             'status' => 'required',
             'division' => 'required',
@@ -157,8 +171,10 @@ class ProjectsController extends Controller
         $project = Project::findOrFail($id);
         $customers = $project->customers();
         $team = $project->team_members();
+        $settings = SystemSetting::allSettingsCollection();
+        $companies = Company::all();
         
-        return view('projects.edit', compact('project', 'customers', 'team'));
+        return view('projects.edit', compact('project', 'companies', 'customers', 'team', 'settings'));
     }
 
     /**
@@ -171,6 +187,16 @@ class ProjectsController extends Controller
     {
         $project = $request->id;
         $data = Project::findOrFail($project);
+
+        // Validate the request...
+        $request->validate([
+            'name' => 'required|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'assigned_to' => 'required|array',
+            'status' => 'required',
+            'division' => 'required',
+        ]);
+
         $data->update($request->all());
 
         return Redirect::route('projects.index', $data)->with('success', 'Progetto aggiornato con successo!');

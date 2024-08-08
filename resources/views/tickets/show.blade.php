@@ -4,10 +4,11 @@
 
 	@php
 		$id = request()->route('ticket');
-		$ticket = App\Models\Ticket::find($id);
-		$project = App\Models\Project::find($ticket->project_id);
-		$customer = App\Models\User::find($project->user_id) ?? null;
-		$user = App\Models\User::find($project->assigned_to) ?? null;
+		// $ticket = App\Models\Ticket::find($id);
+		// $project = App\Models\Project::find($ticket->project_id);
+		// $company = $project ? App\Models\Company::find($project->company_id) : null;
+		// $customer = $ticket ? App\Models\User::find($ticket->user_id) : null;
+		// $user = $project ? App\Models\User::find($project->assigned_to) : null;
 		$attchments = $ticket->getAttachments();
 	@endphp
 
@@ -35,7 +36,6 @@
 				<h2 class="block">Allegati</h2>
 				<ul>
 					@foreach ($attchments as $attachment)
-						{{-- $attachment->path = storage/uploads --}}
 						<li>
 							<a class="block" href="{{ $attachment->path }}" target="_blank">
 								<img src="{{ $attachment->path }}" alt="{{ $attachment->filename }}">

@@ -4,6 +4,7 @@ namespace App\Helpers;
 use App\Models\Project;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\Company;
 
 class Helper
 {
@@ -25,6 +26,9 @@ class Helper
 				break;
 			case 'user':
 				$element = User::find($id)->name;
+				break;
+			case 'company':
+				$element = Company::find($id)->name;
 				break;
 			default:
 				$element = null;

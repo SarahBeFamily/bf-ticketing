@@ -18,3 +18,7 @@ yarn-error.log
 /.idea
 /.vscode
 nfo.php
+public/uploads
+resources/css/app.min.css
+resources/css/app.css
+storage/app/public

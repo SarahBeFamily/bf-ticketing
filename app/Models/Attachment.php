@@ -22,6 +22,7 @@ class Attachment extends Model
         'project_id',
         'user_id',
         'ticket_id',
+        'company'
     ];
 
     /**
@@ -70,5 +71,62 @@ class Attachment extends Model
     public function getSizeAttribute($value)
     {
         return number_format($value / 1024, 2) . ' KB';
+    }
+
+    /**
+     * Get the mime type of the attachment.
+     *
+     * @param string $value
+     * @return string
+     */
+    public function getMimeTypeAttribute($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Get the filename of the attachment.
+     *
+     * @param string $value
+     * @return string
+     */
+    public function getFilenameAttribute($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Get the company related to the attachment (attribute).
+     * 
+     * @param string $type
+     * @return mixed
+     */
+    public function getCompanyAttribute($type)
+    {
+        $company = Company::find($this->company);
+        
+        if (!$company) {
+            return null;
+        }
+
+        switch ($type) {
+            case 'name':
+                return $company->name;
+            case 'id':
+                return $company->id;
+            default:
+                return $company;
+        }
+    }
+
+    /**
+     * Set the company related to the attachment (attribute).
+     * 
+     * @param int $company_id
+     * @return void
+     */
+    public function setCompanyAttribute($company_id)
+    {
+        $this->company = $company_id;
     }
 }

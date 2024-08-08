@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Models\Notification;
+
 
 class User extends Authenticatable
 {
@@ -56,5 +58,55 @@ class User extends Authenticatable
         if ($this->hasRole('team')) {
             return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?s=80';
         }
+    }
+
+    /**
+     * Get customers
+     * 
+     * @return void
+     */
+    public function customers()
+    {
+        return $this->role('customer')->get();
+    }
+
+    /**
+     * Get notifications attribute
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get unread notifications
+     * 
+     * @return void
+     */
+    public function getUnreadNotification()
+    {
+        return Notification::where('user_id', $this->id)->where('status', 'unread')->get();
+    }
+
+    /**
+     * Get all notifications
+     * 
+     * @return void
+     */
+    public function getNotifications()
+    {
+        $userNotifications = Notification::where('user_id', $this->id)->get();
+        return $userNotifications;
+    }
+
+    /**
+     * Get a specific notification
+     * 
+     * @return void
+     */
+    public function getNotification($notificationId)
+    {
+        $notification = Notification::where('user_id', $this->id)->where('id', $notificationId)->first();
+        return $notification;
     }
 }

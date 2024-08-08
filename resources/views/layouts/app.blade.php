@@ -15,20 +15,24 @@
         <!-- Styles -->
         @vite('resources/css/app.scss')
         @vite('resources/css/tailwind.css')
+        @livewireStyles
         @yield('styles')
     </head>
     <body>
-        <div id="app">
+        <div id="app" class="min-h-screen flex flex-col justify-between">
 			@include('partials.header')
 
-            <div class="wrap min-h-screen">
-                <div class="container mx-auto px-4 py-10 min-h-screen">
+            <div class="wrap flex-1">
+                <div class="container mx-auto px-4 py-10">
                     @yield('content')
                 </div>
             </div>
+
+            @include('partials.footer')
         </div>
 
         <!-- Scripts -->
+        @livewireScripts
         @vite('resources/js/app.js')
         @yield('scripts')
     </body>

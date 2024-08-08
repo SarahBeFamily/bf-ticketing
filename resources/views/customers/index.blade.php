@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+
+@php
+$filter = request('filter');
+$company = isset($filter['company']) ? Helper::getElementName('company', $filter['company']) : '';
+@endphp 
+
 	<div class="clienti">
 
 		<div class="header-wrap mb-10">
@@ -13,10 +19,22 @@
 					<div class="alert alert-error">
 						{{ session('error') }}
 					</div>
+				@elseif (session('warning'))
+					<div class="alert alert-warning">
+						{{ session('warning') }}
+					</div>
+				@elseif ($errors->any())
+					<div class="alert alert-error">
+						<ul>
+							@foreach ($errors->all() as $error)
+								<li class="alert alert-error">{{ $error }}</li>
+							@endforeach
+						</ul>
+					</div>
 				@endif
 			</div>
 		
-			<header class="progetti flex items-center justify-between">
+			<header class="clienti flex items-center justify-between">
 				<div class="basis-2/4">
 					<h1 class="mb-5">Clienti</h1>
 				</div>
@@ -31,16 +49,61 @@
 						@csrf
 						<label for="search" class="hidden">Cerca cliente</label>
 						<input type="text" class="form-control" name="search" placeholder="Cerca cliente">
+
+					</form>
+				</div>
+
+				<div>
+					<b>Filtra per:</b>
+					<form action="{{ route('customers.filter') }}" method="post">
+						@csrf
+						@method('PATCH')
+
+						<div class="flex items-end">
+
+							<label for="company" class="col-span-3 font-medium leading-6 text-secondary mr-5">
+								<span class="block">Azienda</span>
+								<div class="input-text relative">
+									<input class="fake company" subject="company" role="combobox" type="text" name="" list="" data-list-id="company" value="{{ $company }}" placeholder="Cerca azienda">
+									<input type="hidden" name="company" value="">
+									<datalist id="company">
+										@foreach ($companies as $company)
+											<option value="{{ $company->id }}">{{ $company->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-company" class="safari-only safari-datalist">
+										@foreach ($companies as $company)
+											<div class="option" value="{{ $company->id }}"></div>
+										@endforeach
+									</div>
+								</div>
+							</label>
+								
+							<button type="submit" class="btn-primary">Filtra</button>
+						</div>
+
 					</form>
 				</div>
 
 				{{-- To do: implementare l'ordinamento --}}
-				<div class="ordine">
+				{{-- <div class="ordine">
 					<button class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
 						<span>Ordina per</span>
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="h-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
 					</button>
-				</div>
+
+					<div class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="bf_orderby" tabindex="-1">
+						<div class="py-1" role="none">
+							<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="bf_orderby-0">Nome</a>
+							<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="bf_orderby-1">Data iscrizione</a>
+						</div>
+					</div>
+
+					<ul class="dropdown-ordina bg-secondary">
+						<li id="sort-name hover:bg-accent-25">Nome</li>
+						<li id="sort-date hover:bg-accent-25">Data iscrizione</li>
+					</ul>
+				</div> --}}
 			</div>
 		</div>
 
@@ -69,6 +132,14 @@
 								</svg>
 								{{ $customer->email }}
 							</div>
+
+							@if ($customer->company)
+							@php($company = $companies->find($customer->company))
+								<div class="mt-2 flex items-center text-sm text-gray-500">
+									<svg class="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400" fill="currentColor" aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 472.615 472.615" xml:space="preserve" width="64px" height="64px"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M328.776,104.453V39.385H143.839v65.068h-41.097v164.386h106.595l-3.853-30.821h61.645l-3.853,30.821h106.595V104.453 H328.776z M308.227,104.453H164.388V59.934h143.839V104.453z"></path> </g> </g> <g> <g> <polygon points="260.709,289.388 256.857,320.213 215.759,320.213 211.906,289.388 102.743,289.388 102.743,433.229 369.873,433.229 369.873,289.388 "></polygon> </g> </g> <g> <g> <rect x="410.969" y="104.457" width="61.647" height="328.773"></rect> </g> </g> <g> <g> <rect y="104.457" width="61.647" height="328.773"></rect> </g> </g> </g></svg>
+									{{ $company->name }}
+								</div>
+							@endif
 						</div>
 					</div>
 
@@ -140,7 +211,9 @@
 
 		<footer class="mt-10">
 			<div class="pagination py-10">
-				{{ $customers->links() }}
+				@if ($customers->count() > 0)
+					{{ $customers->links() }}
+				@endif
 			</div>
 		</footer>
 	</div>

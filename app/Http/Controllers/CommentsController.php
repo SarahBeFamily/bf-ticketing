@@ -7,6 +7,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\Comment;
 use App\Models\Attachment;
+use App\Models\Notification;
+use App\Models\User;
+use App\Models\Ticket;
 
 class CommentsController extends Controller
 {
@@ -33,17 +36,16 @@ class CommentsController extends Controller
         } else {
             // Save the file
             if ($request->hasFile('file')) {
-                $file = $request->file('file');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                // Upload file to public/uploads folder
-                $filePath = $file->storeAs('uploads', $fileName, 'public');
-                $filePath = $file->move(public_path('uploads'), $fileName);
+                $f = $request->file('file');
+                $fileName = time() . '_' . str_replace(' ', '-', $f->getClientOriginalName());
+                $fileSize = $f->getSize();
+                $filePath = $f->storeAs('attachments', $fileName, 'public_uploads');
                 $media = Attachment::create([
                     'filename' => $fileName,
                     'path' => $filePath,
-                    'mime_type' => $file->getMimeType(), // 'image/jpeg'
-                    'size' => $file->getSize(),
-                    'ticket_id' => $request->ticket_id,
+                    'mime_type' => $f->getClientMimeType(),
+                    'size' => $fileSize,
+                    'ticket_id' => $ticket->id,
                     'user_id' => auth()->user()->id,
                     'project_id' => $request->project_id,
                 ]);
@@ -53,7 +55,40 @@ class CommentsController extends Controller
                 }
             }
 
-            // TODO: Send email to assigned users          
+            $mittente = User::find($request->user_id);
+            $ticket = Ticket::find($request->ticket_id);
+
+            if ($mittente->hasRole('customer')) {
+                // Notifica al referente
+                $assigned_to = $ticket->getAssignedToAttribute();
+
+                if (is_array($assigned_to)) {
+                    foreach ($assigned_to as $user) {
+                        $referente = User::find($user);
+                        Notification::create([
+                            'user_id' => $referente->id,
+                            'data' => sprintf('%s ha risposto al ticket #%d - %s', $mittente->name, $request->ticket_id, $ticket->subject),
+                            'notifiable_type' => 'Risposta Ticket',
+                        ]);
+                    }
+                } else {
+                    $referente = User::find($assigned_to);
+
+                    Notification::create([
+                        'user_id' => $referente->id,
+                        'data' => sprintf('%s ha risposto al ticket #%d - %s', $mittente->name, $request->ticket_id, $ticket->subject),
+                        'notifiable_type' => 'Risposta Ticket',
+                    ]);
+                }
+            } else {
+                // Notifica al cliente
+                Notification::create([
+                    'user_id' => $ticket->user_id,
+                    'data' => sprintf('%s ha risposto al ticket #%d - %s', $mittente->name, $request->ticket_id, $ticket->subject),
+                    'notifiable_type' => 'Risposta Ticket',
+                ]);
+            }
+   
             return Redirect::route('tickets.show', $request->ticket_id)->with('success', 'Commento inviato con successo!');
         }
     }

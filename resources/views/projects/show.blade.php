@@ -5,7 +5,7 @@
 	@php
 		$id = request()->route('project');
 		$project = App\Models\Project::find($id);
-		$customer = App\Models\User::find($project->user_id) ?? null;
+		$customer = App\Models\Company::find($project->company_id) ?? null;
 		$user = App\Models\User::find($project->assigned_to) ?? null;
 	@endphp
 
@@ -28,14 +28,34 @@
 				@endforeach
 			@endif
 		</p>
-		<p>Cliente: 
+		<p>Azienda: 
 			@if (!$customer)
-				Non assegnato <br>
+				Non assegnata <br>
 				<a href="{{ route('projects.edit', $id) }}" class="button">Assegna ora</a>
 			@else
-				<a href="{{ route('customers.show', $project->user_id) }}">{{ $customer->name }}</a>
+				<a href="{{ route('companies.show', $project->company_id) }}">{{ $customer->name }}</a>
 			@endif
 		</p>
+		@if ($customer)
+			<p>Clienti assegnati:
+				@php
+					$workers = $customer->workers ? json_decode($customer->workers) : [];
+				@endphp
+				@if (count($workers) == 0)
+					Nessun cliente assegnato<br>
+					<a href="{{ route('companies.edit', $project->company_id) }}" class="button">Assegna ora</a>
+				@else
+					@foreach ($workers as $worker)
+						@php
+							$worker = App\Models\User::find($worker);
+							$worker_company = App\Models\Company::find($worker->company_id);
+							$company_name = $worker_company ? '('.$worker_company->name.')' : '';
+						@endphp
+						<a href="{{ route('profile.edit', $worker->id) }}">{{ $worker->name }} {{ $company_name }}</a>
+					@endforeach
+				@endif
+			</p>
+		@endif
 	</div>
 	
 	@can('edit users')

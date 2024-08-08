@@ -6,10 +6,10 @@
 	$filter = request('filter');
 	$division = $filter['division'] ?? '';
 	$status = $filter['status'] ?? '';
+	$company_id = isset($filter['company_id']) ? Helper::getElementName('company', $filter['company_id']) : '';
 	$project_id = isset($filter['project_id']) ? Helper::getElementName('project', $filter['project_id']) : '';
+	$project_parent = isset($filter['project_id']) ? '?project_id='.$filter['project_id'] : '';
 	$user_id = isset($filter['user_id']) ? Helper::getElementName('user', $filter['user_id']) : '';
-
-	echo $project_id;
 @endphp
 
 	<div class="wrapper flex flex-col justify-between">
@@ -23,6 +23,18 @@
 					<div class="alert alert-error">
 						{{ session('error') }}
 					</div>
+				@elseif (session('warning'))
+					<div class="alert alert-warning">
+						{{ session('warning') }}
+					</div>
+				@elseif ($errors->any())
+					<div class="alert alert-error">
+						<ul>
+							@foreach ($errors->all() as $error)
+								<li class="alert alert-error">{{ $error }}</li>
+							@endforeach
+						</ul>
+					</div>
 				@endif
 			</div>
 
@@ -32,10 +44,10 @@
 					<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Saepe iste cupiditate accusamus minus sapiente hic dignissimos dolorem laudantium nesciunt. Facilis, nam repellendus in alias ipsa minus laborum aperiam eos veniam.</p>
 				</div>
 
-				<a class="btn-primary basis-auto" href="{{ route('tickets.create') }}">Apri un nuovo ticket</a>
+				<a class="btn-primary basis-auto" href="{{ route('tickets.create') }}{{ $project_parent }}">Apri un nuovo ticket</a>
 			</header>
 
-			<div class="filtri my-10 flex items-center justify-between">
+			<div class="filtri my-10 flex items-end justify-between">
 				<div>
 					<b>Filtra per:</b>
 					<form action="{{ route('tickets.filter') }}" method="post">
@@ -47,9 +59,15 @@
 								<span class="block">Reparto</span>
 								<select name="division" id="division">
 									<option value="">Tutti</option>
-									<option value="Grafica" @selected($division == 'Grafica')>Grafica</option>
-									<option value="Web" @selected($division == 'Web')>Web</option>
-									<option value="Social" @selected($division == 'Social')>Social</option>
+									@if (is_array($settings->get('division')))
+										@foreach ($settings->get('division') as $division)
+											<option value="{{ $division }}" @selected($division == $division)>{{ $division }}</option>
+										@endforeach
+									@else
+										<option value="Grafica" @selected($division == 'Grafica')>Grafica</option>
+										<option value="Web" @selected($division == 'Web')>Web</option>
+										<option value="Social" @selected($division == 'Social')>Social</option>
+									@endif
 								</select>
 							</label>
 
@@ -61,6 +79,26 @@
 									<option value="Chiuso" @selected($status == 'Chiuso')>Chiuso</option>
 								</select>
 							</label>
+
+							@can('edit users')
+							<label for="company_id" class="col-span-3 font-medium leading-6 text-secondary ml-5">
+								<span class="block">Azienda</span>
+								<div class="input-text relative">
+									<input class="fake company_id" subject="company_id" role="combobox" type="text" name="" list="" data-list-id="company_id" value="{{ $company_id }}" placeholder="Cerca azienda">
+									<input type="hidden" name="company_id" value="">
+									<datalist id="company_id">
+										@foreach ($companies as $company)
+											<option value="{{ $company->id }}">{{ $company->name }}</option>
+										@endforeach
+									</datalist>
+									<div id="datalist-company_id" class="safari-only safari-datalist">
+										@foreach ($companies as $company)
+											<div class="option" value="{{ $company->id }}"></div>
+										@endforeach
+									</div>
+								</div>
+							</label>
+							@endcan
 
 							<label for="project_id" class="col-span-3 font-medium leading-6 text-secondary mx-5">
 								<span class="block">Progetto</span>
@@ -102,19 +140,35 @@
 								
 							@endcan
 
+							<input type="hidden" name="sort" value="">
 							<button type="submit" class="btn-primary">Filtra</button>
 						</div>
 
 					</form>
 				</div>
 
-				{{-- To do: implementare l'ordinamento --}}
-				<div class="ordine">
-					<button class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
+				<div class="ordine relative transition duration-150 ease-in-out" x-data="{ open: '' }">
+					<button @click="open = ! open" class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
 						<span>Ordina per</span>
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="h-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
 					</button>
+
+					<ul id="dropdown-ordina-projects" class="dropdown-ordina-projects absolute bg-secondary text-white w-full" :class="{'block': open, 'hidden': ! open}">
+						<li data-orderby="deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↑</li>
+						<li data-orderby="-deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↓</li>
+						<li data-orderby="started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↑</li>
+						<li data-orderby="-started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↓</li>
+					</ul>
 				</div>
+			</div>
+
+			<div class="filtri-attivi mb-2">
+				@if ($filter)
+					<span>Filtri attivi:</span>
+					@foreach($filter as $f)
+						<span class="bg-secondary text-white px-2 py-1 rounded-full mr-2">{{ $f }}</span>
+					@endforeach
+				@endif
 			</div>
 
 		</div>
@@ -126,35 +180,47 @@
 				@php
 					$bg = $i % 2 == 0 ? 'bg-gray-100 ' : '';
 					$project = App\Models\Project::find($ticket->project_id);
-					$customer = App\Models\User::find($project->user_id);
-					$user = App\Models\User::find($project->assigned_to);
+					$company = $project ? App\Models\Company::find($project->company_id) : null;
+					$user = $ticket->assigned_to;
+					$customer = App\Models\User::find($ticket->user_id);
 					$comments = $ticket->getComments();
 					$referenti = [];
-					if ($user) {
+					if ($user && is_array($user)) {
 						foreach ($user as $team) {
-							$referenti[] = $team->name;
+							$referenti[] = App\Models\User::find($team)->name;
 						}
+					} else if ($user) {
+						$referenti[] = App\Models\User::find($user)->name;
 					}
 				@endphp
 				<div class="{{ $bg }}lg:flex lg:items-center lg:justify-between border-b border-gray-300 p-5">
 					<div class="min-w-0 flex-1">
 						<h2 class="mb-2 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">{{ $ticket->subject }}</h2>
 						<div class="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
+
+							@can('edit users')
 							<div class="mt-2 flex items-center text-sm text-gray-500">
-								<svg class="details" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.325a41.622 41.622 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25zM10 10a1 1 0 00-1 1v.01a1 1 0 001 1h.01a1 1 0 001-1V11a1 1 0 00-1-1H10z" clip-rule="evenodd" />
-									<path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 01-9.274 0C3.985 17.585 3 16.402 3 15.055z" />
-								</svg>
-								{{ $project->division }} - {{ $ticket->type }}
+								ID #{{ $ticket->id }}
 							</div>
+							@endcan
 
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="details" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 									<path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.325a41.622 41.622 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25zM10 10a1 1 0 00-1 1v.01a1 1 0 001 1h.01a1 1 0 001-1V11a1 1 0 00-1-1H10z" clip-rule="evenodd" />
 									<path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 01-9.274 0C3.985 17.585 3 16.402 3 15.055z" />
 								</svg>
-								{{ $project->name }}
+								{{ $project ? $project->division.' -' : '' }} {{ $ticket->type }}
 							</div>
+
+							@if ($project)
+							<div class="mt-2 flex items-center text-sm text-gray-500">
+								<svg class="details" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.572.055 1.14.122 1.706.2C17.053 4.582 18 5.75 18 7.07v3.469c0 1.126-.694 2.191-1.83 2.54-1.952.599-4.024.921-6.17.921s-4.219-.322-6.17-.921C2.694 12.73 2 11.665 2 10.539V7.07c0-1.321.947-2.489 2.294-2.676A41.047 41.047 0 016 4.193V3.75zm6.5 0v.325a41.622 41.622 0 00-5 0V3.75c0-.69.56-1.25 1.25-1.25h2.5c.69 0 1.25.56 1.25 1.25zM10 10a1 1 0 00-1 1v.01a1 1 0 001 1h.01a1 1 0 001-1V11a1 1 0 00-1-1H10z" clip-rule="evenodd" />
+									<path d="M3 15.055v-.684c.126.053.255.1.39.142 2.092.642 4.313.987 6.61.987 2.297 0 4.518-.345 6.61-.987.135-.041.264-.089.39-.142v.684c0 1.347-.985 2.53-2.363 2.686a41.454 41.454 0 01-9.274 0C3.985 17.585 3 16.402 3 15.055z" />
+								</svg>
+								{{ $project->name }} {{ $company ? ' | '.$company->name : '' }}
+							</div>
+							@endif
 
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="details" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -165,9 +231,10 @@
 										<path d="M12.0002 14.5C6.99016 14.5 2.91016 17.86 2.91016 22C2.91016 22.28 3.13016 22.5 3.41016 22.5H20.5902C20.8702 22.5 21.0902 22.28 21.0902 22C21.0902 17.86 17.0102 14.5 12.0002 14.5Z"></path>
 									</g>
 								</svg>
-								{{ $customer->name }}
+								{{ $customer->name }} | il {{ $ticket->created_at->format('d/m/Y') }} alle ore: {{ $ticket->created_at->format('H:i') }}
 							</div>
 
+							@if(!empty($referenti))
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="details" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 									<g stroke-width="0"></g>
@@ -181,6 +248,7 @@
 								</svg>
 								{{ implode(', ', $referenti) }}
 							</div>
+							@endif
 
 							<div class="mt-2 flex items-center text-sm text-gray-500">
 								<svg class="details" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" enable-background="new 0 0 52 52" xml:space="preserve">

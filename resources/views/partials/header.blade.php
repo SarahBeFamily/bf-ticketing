@@ -5,7 +5,7 @@
 				<img src="{{ Vite::asset('resources/images/bf-logo-reg-small.png') }}" alt="Be.Family Assistenza Clienti" class="h-12">
 			</a>
 
-			@include('../layouts/navigation')
+			@include('layouts.navigation')
 		</div>
 	</div>
 </header>

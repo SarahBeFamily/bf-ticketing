@@ -15,9 +15,9 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignId('user_id')->constrained();
-            $table->string('division')->default('development');
-            $table->string('status')->default('development');
+            $table->foreignId('company_id')->constrained('companies');
+            $table->string('division')->default('Web');
+            $table->string('status')->default('In corso');
             $table->string('assigned_to')->default('[]');
             $table->timestamp('started_at')->nullable();
             $table->timestamp('deadline')->nullable();

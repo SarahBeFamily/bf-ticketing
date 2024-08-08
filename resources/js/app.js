@@ -1,5 +1,5 @@
 import './bootstrap';
-import Alpine from 'alpinejs';
+// import Alpine from 'alpinejs';
 import $ from 'jquery';
 
 import.meta.glob([
@@ -7,9 +7,8 @@ import.meta.glob([
 	'../fonts/**',
 ]);
 
-window.Alpine = Alpine;
-
-Alpine.start();
+// window.Alpine = Alpine;
+// Alpine.start();
 
 $(function() {
 
@@ -79,6 +78,15 @@ $(function() {
 				option[i].style.display = "none";
 			}
 		}
+	});
+
+	// Orderby on click on list
+	$('ul[id*="dropdown-ordina-"]').on('click', 'li', function() {
+		let orderby = $(this).attr('data-orderby'),
+			form = $(`form#filtra`);
+			
+		form.find(`input[name="sort"]`).val(orderby);
+		form.trigger('submit');
 	});
 
 });

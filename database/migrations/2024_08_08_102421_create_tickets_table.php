@@ -15,11 +15,13 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('subject');
             $table->text('content');
-            $table->string('status')->default('open');
+            $table->string('status')->default('Aperto');
+            $table->string('division')->default('Nessuna');
             $table->string('type');
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('project_id')->nullable()->constrained('projects');
-            $table->string('assigned_to')->nullable();
+            $table->foreignId('project_id')->constrained('projects');
+            $table->foreignId('company_id')->constrained('companies');
+            $table->string('assigned_to');
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
