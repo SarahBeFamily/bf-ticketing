@@ -2,11 +2,6 @@
 
 @section('content')
 
-@php
-$filter = request('filter');
-$company = isset($filter['company']) ? Helper::getElementName('company', $filter['company']) : '';
-@endphp 
-
 	<div class="clienti">
 
 		<div class="header-wrap mb-10">
@@ -51,59 +46,8 @@ $company = isset($filter['company']) ? Helper::getElementName('company', $filter
 						<input type="text" class="form-control" name="search" placeholder="Cerca cliente">
 					</form>
 				</div>
-
-				<div>
-					<b>Filtra per:</b>
-					<form action="{{ route('customers.filter') }}" method="post">
-						@csrf
-						@method('PATCH')
-
-						<div class="flex items-end">
-
-							<label for="company" class="col-span-3 font-medium leading-6 text-secondary mr-5">
-								<span class="block">Azienda</span>
-								<div class="input-text relative">
-									<input class="fake company" subject="company" role="combobox" type="text" name="" list="" data-list-id="company" value="{{ $company }}" placeholder="Cerca azienda">
-									<input type="hidden" name="company" value="">
-									<datalist id="company">
-										@foreach ($companies as $company)
-											<option value="{{ $company->id }}">{{ $company->name }}</option>
-										@endforeach
-									</datalist>
-									<div id="datalist-company" class="safari-only safari-datalist">
-										@foreach ($companies as $company)
-											<div class="option" value="{{ $company->id }}"></div>
-										@endforeach
-									</div>
-								</div>
-							</label>
-								
-							<button type="submit" class="btn-primary">Filtra</button>
-						</div>
-
-					</form>
-				</div>
-
-				{{-- To do: implementare l'ordinamento --}}
-				{{-- <div class="ordine">
-					<button class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
-						<span>Ordina per</span>
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="h-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
-					</button>
-
-					<div class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="bf_orderby" tabindex="-1">
-						<div class="py-1" role="none">
-							<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="bf_orderby-0">Nome</a>
-							<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="bf_orderby-1">Data iscrizione</a>
-						</div>
-					</div>
-
-					<ul class="dropdown-ordina bg-secondary">
-						<li id="sort-name hover:bg-accent-25">Nome</li>
-						<li id="sort-date hover:bg-accent-25">Data iscrizione</li>
-					</ul>
-				</div> --}}
 			</div>
+
 		</div>
 
 		<div class="wrap">

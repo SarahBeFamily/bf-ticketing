@@ -74,7 +74,6 @@ class CompanyController extends Controller
         $request->validate([
             'name' => 'required|unique:companies|max:255',
             'logo' => 'mimes:jpeg,png,jpg,svg|max:2048',
-            'workers' => 'required',
         ]);
 
         $company = new Company;
@@ -218,25 +217,13 @@ class CompanyController extends Controller
         // Delete the file from the storage
         Storage::delete($company->logo);
         
-        if (file_exists(public_path('/uploads/logo_aziende/'.$company->logo))) {
-            unlink(public_path('/uploads/logo_aziende/'.$company->logo));
+        if (file_exists(public_path('/storage/logo_aziende/'.$company->logo))) {
+            unlink(public_path('/storage/logo_aziende/'.$company->logo));
         }
         $company->logo = null;
 
         $company->save();
         return redirect()->route('companies.edit', $company)->with('success', 'Logo eliminato con successo.');
-    }
-
-    /**
-     * Remove the specified company from storage.
-     * 
-     * @param Company $company
-     * @return void
-     */
-    public function destroy(Company $company)
-    {
-        $company->deleteCompany();
-        return redirect()->route('companies.index')->with('success', 'Azienda eliminata con successo.');
     }
 
     /**
@@ -247,7 +234,8 @@ class CompanyController extends Controller
      */
     public function search(Request $request)
     {
-        $companies = Company::where('name', 'like', '%' . $request->search . '%')->get();
-        return view('companies.index', compact('companies'));
+        $search = $request->input('search');
+        $companies = Company::where('name', 'like', "%$search%")->paginate(10);
+        return view('companies.search', compact('companies'));
     }
 }

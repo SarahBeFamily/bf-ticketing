@@ -89,4 +89,21 @@ $(function() {
 		form.trigger('submit');
 	});
 
+	// Open image on click in a modal
+	$('.open-image').on('click', function() {
+		let img = $(this).attr('src'),
+			modal = $('#modal-image');
+
+		modal.find('.modal-body img').attr('src', img);
+		modal.find('.modal-body img').attr('alt', $(this).attr('alt'));
+		modal.find('.modal-body a.button').attr('href', img);
+
+		modal.fadeIn();
+	});
+
+	// Close modal on click
+	$('.close-modal').on('click', function() {
+		$(this).parents('#modal-image').fadeOut();
+	});
+
 });

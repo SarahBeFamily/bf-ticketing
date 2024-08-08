@@ -58,7 +58,9 @@
 					<label for="workers" class="block text-sm font-medium leading-6 text-gray-900">Assegna Utenti</label>
 					<select name="workers[]" id="workers" class="block w-full" multiple>
 						@foreach ($users as $customer)
-							<option value="{{ $customer->id }}" @selected(in_array($customer->id, $workers))>{{ $customer->name }}</option>
+							@if ($customer->company == null || $customer->company == $company->id)
+								<option value="{{ $customer->id }}" @selected(in_array($customer->id, $workers))>{{ $customer->name }}</option>
+							@endif
 						@endforeach
 					</select>
 				</div>

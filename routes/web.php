@@ -78,18 +78,17 @@ Route::group(['middleware' => ['role:team']], function () {
 
     // Routes for the CompanyController
     Route::get('/aziende', [CompanyController::class, 'index'])->name('companies.index');
-    // Route::get('/aziende', [CompanyController::class, 'search'])->name('companies.search');
+    Route::get('/aziende/risultati', [CompanyController::class, 'search'])->name('companies.search');
     Route::get('/aziende/nuova', [CompanyController::class, 'create'])->name('companies.create');
     Route::post('/aziende', [CompanyController::class, 'store'])->name('companies.store');
     Route::get('/aziende/{company}', [CompanyController::class, 'show'])->name('companies.show');
     Route::get('/aziende/{company}/modifica', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::patch('/aziende/{company}', [CompanyController::class, 'update'])->name('companies.update');
     Route::get('/aziende/{company}/deletelogo', [CompanyController::class, 'delete_logo'])->name('companies.delete_logo');
-    Route::delete('/aziende/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
 
     // Routes for the CustomerController
     Route::get('/clienti', [CustomerController::class, 'index'])->name('customers.index');
-    // Route::get('/clienti', [CustomerController::class, 'search'])->name('customers.search');
+    Route::get('/clienti/risultati', [CustomerController::class, 'search'])->name('customers.search');
     Route::patch('/clienti', [CustomerController::class, 'filter'])->name('customers.filter');
     Route::get('/clienti/nuovo', [CustomerController::class, 'create'])->name('customers.create');
     Route::post('/clienti', [CustomerController::class, 'store'])->name('customers.store');

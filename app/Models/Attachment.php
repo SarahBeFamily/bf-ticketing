@@ -59,7 +59,7 @@ class Attachment extends Model
      */
     public function getPathAttribute($value)
     {
-        return asset($value);
+        return asset('storage/'.$value);
     }
 
     /**

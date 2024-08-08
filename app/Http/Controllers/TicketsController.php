@@ -201,7 +201,8 @@ class TicketsController extends Controller
                 foreach ($files as $f) {
                     $fileName = time() . '_' . str_replace(' ', '-', $f->getClientOriginalName());
                     $fileSize = $f->getSize();
-                    $filePath = $f->storeAs('attachments', $fileName, 'public_uploads');
+                    $filePath = $f->storeAs('allegati', $fileName, 'public_uploads');
+
                     $media = Attachment::create([
                         'filename' => $fileName,
                         'path' => $filePath,
@@ -223,10 +224,10 @@ class TicketsController extends Controller
                     $team_email = User::find($assigned_to)->email;
                     $message = 'Un nuovo ticket (#'.$ticket->id.') è stato aperto da '.User::find($ticket->user_id)->name.' per il progetto '.Project::find($ticket->project_id)->name.'.';
                     // TODO: Send email to the team
-                    // Mail::to($team_email)->send(new TicketCreated($ticket, $message));
+                    Mail::to($team_email)->send(new TicketCreated($ticket, $message));
 
                     // To DO: Send email to the customer
-                    // Mail::to(User::find($ticket->user_id)->email)->send(new TicketCreated($ticket));
+                    Mail::to(User::find($ticket->user_id)->email)->send(new TicketCreated($ticket));
 
                     // Add notification to DB assigned to the team
                     Notification::create([

@@ -37,9 +37,7 @@
 				<ul>
 					@foreach ($attchments as $attachment)
 						<li>
-							<a class="block" href="{{ $attachment->path }}" target="_blank">
-								<img src="{{ $attachment->path }}" alt="{{ $attachment->filename }}">
-							</a>
+							<img class="block open-image cursor-pointer" src="{{ $attachment->path }}" alt="{{ $attachment->filename }}">
 						</li>
 					@endforeach
 				</ul>
@@ -92,6 +90,20 @@
 			<input type="hidden" name="project_id" value="{{ $project->id }}">
 			<button type="submit" class="button btn-primary">Invia</button>
 		</form>
+	</div>
+
+	<div id="modal-image" class="hidden fixed top-0 left-0 w-full h-screen bg-opacity-80 bg-secondary">
+		<div class="modal-body flex flex-col justify-center items-center min-h-screen">
+			<span class="close-modal bg-white cursor-pointer">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+					<path d="M18 6l-12 12" />
+					<path d="M6 6l12 12" />
+				  </svg>
+			</span>
+			<img src="" alt="" class="w-full h-auto max-w-fit mb-4 border-white border-solid border-8">
+			<a href="" class="button btn-primary" target="_blank" download="">{{ __('Scarica') }}</a>
+		</div>
 	</div>
 
 @endsection

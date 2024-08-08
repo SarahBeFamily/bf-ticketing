@@ -46,19 +46,13 @@
 					</form>
 				</div>
 
-				{{-- <div class="ordine relative transition duration-150 ease-in-out" x-data="{ open: '' }">
-					<button @click="open = ! open" class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
+				{{-- To do: implementare l'ordinamento --}}
+				<div class="ordine">
+					<button class="inline-flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="bf_orderby" type="button" aria-haspopup="menu" aria-expanded="false" data-bf-state="">
 						<span>Ordina per</span>
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" class="h-5"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path></svg>
 					</button>
-
-					<ul id="dropdown-ordina-companies" class="dropdown-ordina-companies absolute bg-secondary text-white w-full" :class="{'block': open, 'hidden': ! open}">
-						<li data-orderby="deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↑</li>
-						<li data-orderby="-deadline" class="hover:bg-accent-100 p-2 cursor-pointer">Scadenza ↓</li>
-						<li data-orderby="started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↑</li>
-						<li data-orderby="-started_at" class="hover:bg-accent-100 p-2 cursor-pointer">Data di inizio ↓</li>
-					</ul>
-				</div> --}}
+				</div>
 			</div>
 		</div>
 
