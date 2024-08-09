@@ -22,3 +22,4 @@ public/uploads
 resources/css/app.min.css
 resources/css/app.css
 storage/app/public
+prod.env

@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('mime_type');
             $table->unsignedBigInteger('size');
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('project_id')->nullable()->constrained('projects')->cascadeOnDelete();
+            $table->foreignId('project_id')->nullable()->constrained('projects');
             $table->foreignId('ticket_id')->nullable()->constrained('tickets')->cascadeOnDelete();
-            $table->foreignId('comment_id')->nullable()->constrained('comments')->cascadeOnDelete();
+            $table->foreignId('comment_id')->nullable()->constrained('comments');
             $table->foreignId('company_id')->nullable()->constrained('companies')->cascadeOnDelete();
             $table->timestamps();
         });

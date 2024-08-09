@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('ticket_id')->constrained('tickets')->cascadeOnDelete();
+            $table->foreignId('ticket_id')->constrained('tickets');
             $table->foreignId('user_id')->constrained('users');
             $table->text('content');
             $table->timestamps();

@@ -58,6 +58,41 @@ class PermissionSeeder extends Seeder
         ]);
         $user->assignRole($role2);
 
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Niccolò Mamprin',
+            'email' => 'niccolo@befamily.it',
+            'password' => bcrypt('Niccol0@2024'),
+        ]);
+        $user->assignRole($role2);
+
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Pierfilippo Ariano',
+            'email' => 'pierfilippo@befamily.it',
+            'password' => bcrypt('Pier@2024'),
+        ]);
+        $user->assignRole($role2);
+
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Elisa Cianferoni',
+            'email' => 'elisa@befamily.it',
+            'password' => bcrypt('Cianfe@2024'),
+        ]);
+        $user->assignRole($role2);
+
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Simone Amaroli',
+            'email' => 'simone@befamily.it',
+            'password' => bcrypt('Sim0ne@2024'),
+        ]);
+        $user->assignRole($role2);
+
+        $user = \App\Models\User::factory()->create([
+            'name' => 'Francesca Prando',
+            'email' => 'francesca@befamily.it',
+            'password' => bcrypt('Francesc@2024'),
+        ]);
+        $user->assignRole($role2);
+
         // $user = \App\Models\User::factory()->create([
         //     'name' => 'Sarah Pinna',
         //     'email' => 'sarah@befamily.it',
