@@ -2,7 +2,7 @@
     $unread_nots = !isset($unread_nots) ? Auth::user()->getUnreadNotification() : $unread_nots;
 @endphp
 
-<nav x-data="{ open: false }" class="bg-white dark:bg-secondary">
+<nav x-data="{ open: false }" class="bg-secondary dark:bg-secondary">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
