@@ -7,15 +7,15 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TicketCreated;
 use App\Models\SystemSetting;
 use App\Models\Ticket;
 use App\Models\Company;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Attachment;
-use Illuminate\Support\Facades\Mail;
 use Spatie\QueryBuilder\QueryBuilder;
-use App\Notifications\TicketCreated;
 use Spatie\QueryBuilder\AllowedFilter;
 use App\Models\Notification;
 
@@ -222,9 +222,9 @@ class TicketsController extends Controller
             if (is_array($project_rel->assigned_to) && count($project_rel->assigned_to) > 0) {
                 foreach ($project_rel->assigned_to as $assigned_to) {
                     $team_email = User::find($assigned_to)->email;
-                    $message = 'Un nuovo ticket (#'.$ticket->id.') è stato aperto da '.User::find($ticket->user_id)->name.' per il progetto '.Project::find($ticket->project_id)->name.'.';
+                    // $message = 'Un nuovo ticket (#'.$ticket->id.') è stato aperto da '.User::find($ticket->user_id)->name.' per il progetto '.Project::find($ticket->project_id)->name.'.';
                     // TODO: Send email to the team
-                    Mail::to($team_email)->send(new TicketCreated($ticket, $message));
+                    Mail::to($team_email)->send(new TicketCreated($ticket));
 
                     // To DO: Send email to the customer
                     Mail::to(User::find($ticket->user_id)->email)->send(new TicketCreated($ticket));

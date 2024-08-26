@@ -55,9 +55,11 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profilo') }}
-                        </x-dropdown-link>
+                        @can('edit users', App\Models\User::class)
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profilo') }}
+                            </x-dropdown-link>
+                        @endcan
 
                         <x-dropdown-link :href="route('profile.notifications')">
                             {{ __('Notifiche') }}
@@ -179,9 +181,11 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                @can('edit users', App\Models\User::class)
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Profilo') }}
+                    </x-responsive-nav-link>
+                @endcan
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
